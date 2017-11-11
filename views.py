@@ -139,7 +139,7 @@ class OwnerEmailListResource(Resource):
     def post(self):
         request_dict = request.get_json()
         if not request_dict:
-            resp = {'message': 'No input data provided'}
+            resp = {'message': 'No input data provided; owner, owner_email, access_level(optional)'}
             return resp, status.HTTP_400_BAD_REQUEST
         errors = owner_email_schema.validate(request_dict)
         if errors:
@@ -318,43 +318,6 @@ class BookableRoomResource(Resource):
         result = bookable_room_schema.dump(bookable_room).data
         return result
 
-    def put(self, id):
-        bookable_room = BookableRoom.query.get_or_404(id)
-        update_dict = request.get_json()
-        if not update_dict:
-            resp = {'message': 'No input data provided'}
-            return resp, status.HTTP_400_BAD_REQUEST
-        if 'resort' in update_dict:
-            resort_name = update_dict['resort']['name']
-            resort = Resort.query.filter_by(name=resort_name).first()
-            if resort is None:
-                # Resort does not exist
-                resp = {'message': 'resort name does not exist'}
-                return resp, status.HTTP_400_BAD_REQUEST
-            bookable_room.resort = resort
-        if 'room_type' in update_dict:
-            room_type_name = update_dict['room_type']['name']
-            room_type = RoomType.query.filter_by(name=room_type_name).first()
-            if room_type is None:
-                # Resort does not exist
-                resp = {'message': 'room type name does not exist'}
-                return resp, status.HTTP_400_BAD_REQUEST
-            bookable_room.room_type = room_type
-        dumped_message, dump_errors = bookable_room_schema.dump(bookable_room)
-        if dump_errors:
-            return dump_errors, status.HTTP_400_BAD_REQUEST
-        validate_errors = bookable_room_schema.validate(dumped_message)
-        if validate_errors:
-            return validate_errors, status.HTTP_400_BAD_REQUEST
-        try:
-            bookable_room.update(log="UPDATE - " + bookable_room.__repr__())
-            return self.get(id)
-        except SQLAlchemyError as e:
-            db.session.rollback()
-            resp = jsonify({"error": str(e)})
-            resp.status_code = status.HTTP_400_BAD_REQUEST
-            return resp
-
     def delete(self, id):
         bookable_room = BookableRoom.query.get_or_404(id)
         try:
@@ -393,6 +356,11 @@ class BookableRoomListResource(Resource):
             if room_type is None:
                 # Room Type does not exist
                 resp = {'message': 'room type name does not exist'}
+                return resp, status.HTTP_400_BAD_REQUEST
+            existing_bookable_room = BookableRoom.query.filter_by(resort_id=resort.id, room_type_id=room_type.id).first()
+            if existing_bookable_room is not None:
+                resp = {'message': 'resort and room combination already exists',
+                        'existing_bookable_room': bookable_room_schema.dump(existing_bookable_room).data}
                 return resp, status.HTTP_400_BAD_REQUEST
             bookable_room = BookableRoom(resort, room_type)
             bookable_room.add(bookable_room)
