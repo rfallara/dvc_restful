@@ -410,7 +410,7 @@ class BookableRoomListResource(Resource):
 class ActualPointResource(Resource):
 
     def get(self, id):
-        actual_point = ActualPoint.query.get_or_404(id)
+        actual_point = ActualPoint.query.filter_by(id=id).first_or_404()
         result = actual_point_schema.dump(actual_point).data
         return result
 
@@ -426,7 +426,7 @@ class ActualPointListResource(Resource):
 class PersonalPointResource(Resource):
 
     def get(self, id):
-        personal_point = PersonalPoint.query.get_or_404(id)
+        personal_point = PersonalPoint.query.filter_by(id=id).first_or_404()
         result = personal_point_schema.dump(personal_point).data
         return result
 
