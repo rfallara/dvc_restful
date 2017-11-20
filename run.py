@@ -8,3 +8,6 @@ if __name__ == '__main__':
             port=app.config['PORT'],
             debug=app.config['DEBUG'])
 
+if __name__ == 'builtins':
+    app.app_context().push()
+
