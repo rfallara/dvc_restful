@@ -33,7 +33,7 @@ class TripListResource(Resource):
             new_trip = Trip()
             trip_owner = Owner.query.filter_by(name=request_dict['owner']['name']).first()
             if trip_owner is None:
-                # Resort does not exist
+                # owner does not exist
                 resp = {'message': 'owner does not exist'}
                 return resp, status.HTTP_400_BAD_REQUEST
             new_trip.owner_id = trip_owner.id
