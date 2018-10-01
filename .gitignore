@@ -2,3 +2,4 @@
 /venv_dvc
 /.idea
 /migrations
+gcp_auth.py
