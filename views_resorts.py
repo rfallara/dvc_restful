@@ -2,8 +2,9 @@ from flask import request, jsonify
 from flask_restful import Resource
 from sqlalchemy.exc import SQLAlchemyError
 from models import db, Resort, ResortSchema, RoomType, RoomTypeSchema, BookableRoom, BookableRoomSchema, EventLogger
-#from views import google_id
+from flask_jwt_extended import jwt_required
 import status
+
 
 google_id = "test@fallara.net"
 
@@ -11,12 +12,15 @@ resort_schema = ResortSchema()
 room_type_schema = RoomTypeSchema()
 bookable_room_schema = BookableRoomSchema()
 
+
 class ResortResource(Resource):
+    @jwt_required
     def get(self, id):
         resort = Resort.query.get_or_404(id)
         result = resort_schema.dump(resort).data
         return result
 
+    @jwt_required
     def put(self, id):
         resort = Resort.query.get_or_404(id)
         update_dict = request.get_json()
@@ -40,6 +44,7 @@ class ResortResource(Resource):
             resp.status_code = status.HTTP_400_BAD_REQUEST
             return resp
 
+    @jwt_required
     def delete(self, id):
         resort = Resort.query.get_or_404(id)
         try:
@@ -53,11 +58,13 @@ class ResortResource(Resource):
 
 
 class ResortListResource(Resource):
+    @jwt_required
     def get(self):
         resort = Resort.query.all()
         result = resort_schema.dump(resort, many=True).data
         return result
 
+    @jwt_required
     def post(self):
         request_dict = request.get_json()
         if not request_dict:
@@ -81,11 +88,13 @@ class ResortListResource(Resource):
 
 
 class RoomTypeResource(Resource):
+    @jwt_required
     def get(self, id):
         room_type = RoomType.query.get_or_404(id)
         result = room_type_schema.dump(room_type).data
         return result
 
+    @jwt_required
     def put(self, id):
         room_type = RoomType.query.get_or_404(id)
         update_dict = request.get_json()
@@ -111,6 +120,7 @@ class RoomTypeResource(Resource):
             resp.status_code = status.HTTP_400_BAD_REQUEST
             return resp
 
+    @jwt_required
     def delete(self, id):
         room_type = RoomType.query.get_or_404(id)
         try:
@@ -124,11 +134,13 @@ class RoomTypeResource(Resource):
 
 
 class RoomTypeListResource(Resource):
+    @jwt_required
     def get(self):
         room_type = RoomType.query.all()
         result = room_type_schema.dump(room_type, many=True).data
         return result
 
+    @jwt_required
     def post(self):
         request_dict = request.get_json()
         if not request_dict:
@@ -154,11 +166,13 @@ class RoomTypeListResource(Resource):
 
 
 class BookableRoomResource(Resource):
+    @jwt_required
     def get(self, id):
         bookable_room = BookableRoom.query.get_or_404(id)
         result = bookable_room_schema.dump(bookable_room).data
         return result
 
+    @jwt_required
     def put(self, id):
         bookable_room = BookableRoom.query.get_or_404(id)
         update_dict = request.get_json()
@@ -196,6 +210,7 @@ class BookableRoomResource(Resource):
             resp.status_code = status.HTTP_400_BAD_REQUEST
             return resp
 
+    @jwt_required
     def delete(self, id):
         bookable_room = BookableRoom.query.get_or_404(id)
         try:
@@ -209,11 +224,13 @@ class BookableRoomResource(Resource):
 
 
 class BookableRoomListResource(Resource):
+    @jwt_required
     def get(self):
         bookable_room = BookableRoom.query.all()
         result = bookable_room_schema.dump(bookable_room, many=True).data
         return result
 
+    @jwt_required
     def post(self):
         request_dict = request.get_json()
         if not request_dict:

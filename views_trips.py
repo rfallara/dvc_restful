@@ -2,12 +2,13 @@ from flask import request
 from flask_restful import Resource
 from models import Trip, TripSchema, Owner, BookableRoom, Resort
 import status
+from flask_jwt_extended import jwt_required
 
 trip_schema = TripSchema()
 
 
 class TripResource(Resource):
-
+    @jwt_required
     def get(self, id):
         trip = Trip.query.get_or_404(id)
         result = trip_schema.dump(trip).data
@@ -15,11 +16,13 @@ class TripResource(Resource):
 
 
 class TripListResource(Resource):
+    @jwt_required
     def get(self):
         trip = Trip.query.all()
         result = trip_schema.dump(trip, many=True).data
         return result
 
+    @jwt_required
     def post(self):
         request_dict = request.get_json()
         if not request_dict:
@@ -56,4 +59,3 @@ class TripListResource(Resource):
             if new_trip.points_needed < 0:
                 resp = {'message': 'points needed must be at least 1'}
                 return resp, status.HTTP_400_BAD_REQUEST
-
