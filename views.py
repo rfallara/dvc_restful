@@ -1,5 +1,6 @@
 from flask import Blueprint
 from flask_restful import Api
+from views_token import Token
 from views_owner import OwnerResource, OwnerListResource, OwnerEmailResource, OwnerEmailListResource
 from views_resorts import ResortResource, ResortListResource, RoomTypeResource, RoomTypeListResource, \
     BookableRoomResource, BookableRoomListResource
@@ -10,6 +11,7 @@ from views_trips import TripResource, TripListResource
 api_bp = Blueprint('api', __name__)
 api = Api(api_bp)
 
+api.add_resource(Token, '/token/')
 api.add_resource(OwnerResource, '/owners/<int:id>')
 api.add_resource(OwnerListResource, '/owners/')
 api.add_resource(OwnerEmailResource, '/owner_emails/<int:id>')

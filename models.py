@@ -3,6 +3,10 @@ from marshmallow import validate
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from sqlalchemy.sql import func
+import datetime
+import gcp_auth
+import jwt
+
 
 db = SQLAlchemy()
 ma = Marshmallow()
@@ -153,6 +157,49 @@ class EventLog(db.Model, AddUpdateDelete):
     google_id = db.Column(db.String(45), nullable=False)
     description = db.Column(db.String(4095), nullable=False)
 
+
+class TokenUser(db.Model, AddUpdateDelete):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(45), nullable=False)
+    password = db.Column(db.String(45), nullable=False)
+
+    def encode_auth_token(self, user_id):
+        """
+        Generates the Auth Token
+        :return: string
+        """
+        try:
+            payload = {
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=600),
+                'iat': datetime.datetime.utcnow(),
+                'sub': user_id
+            }
+            return jwt.encode(
+                payload,
+                gcp_auth.token_secret,
+                algorithm='HS256'
+            )
+        except Exception as e:
+            return e
+
+    @staticmethod
+    def decode_auth_token(auth_token):
+        """
+        Validates the auth token
+        :param auth_token:
+        :return: integer|string
+        """
+        try:
+            payload = jwt.decode(auth_token, gcp_auth.token_secret)
+            # is_blacklisted_token = BlacklistToken.check_blacklist(auth_token)
+            # if is_blacklisted_token:
+            #     return 'Token blacklisted. Please log in again.'
+            # else:
+            return payload['sub']
+        except jwt.ExpiredSignatureError:
+            return 'Signature expired. Please log in again.'
+        except jwt.InvalidTokenError:
+            return 'Invalid token. Please log in again.'
 
 
 class OwnerSchema(ma.Schema):
