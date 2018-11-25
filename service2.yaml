@@ -8,8 +8,10 @@
 #application: dvc-restful-gae
 #version: 1
 runtime: python37
+service: rest-api
 #api_version: 1
 #threadsafe: yes ---not supported in python37 runtime
+
 # Handlers define how to route requests to your application.
 handlers:
 # This handler tells app engine how to route requests to a WSGI application.
@@ -17,16 +19,14 @@ handlers:
 # where <wsgi_application> is a WSGI application object.
 - url: .*  # This regex directs all routes to main.app
   script: auto
-#  script: run.app
 
 # App Engine serves and caches static files contained in the listed directories
 # (and subdirectories). Uncomment and set the directory as needed.
 #- url: /client
 #  static_dir: client
 
+#  script: run.app
 
-#- url: /
-#  script: main.py
 
 # Third party libraries that are included in the App Engine SDK must be listed
 # here if you want to use them.  See

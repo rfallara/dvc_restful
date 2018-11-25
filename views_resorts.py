@@ -49,7 +49,7 @@ class ResortResource(Resource):
         resort = Resort.query.get_or_404(id)
         try:
             resort.delete(resort, log="DELETE - " + resort.__repr__())
-            return ('', status.HTTP_204_NO_CONTENT)
+            return '', status.HTTP_200_OK
         except SQLAlchemyError as e:
             db.session.rollback()
             resp = jsonify({"error": str(e)})
@@ -125,7 +125,7 @@ class RoomTypeResource(Resource):
         room_type = RoomType.query.get_or_404(id)
         try:
             room_type.delete(room_type, log="DELETE - " + room_type.__repr__())
-            return ('', status.HTTP_204_NO_CONTENT)
+            return '', status.HTTP_200_OK
         except SQLAlchemyError as e:
             db.session.rollback()
             resp = jsonify({"error": str(e)})
@@ -215,7 +215,7 @@ class BookableRoomResource(Resource):
         bookable_room = BookableRoom.query.get_or_404(id)
         try:
             bookable_room.delete(bookable_room, log="DELETE" + bookable_room.__repr__())
-            return ('', status.HTTP_204_NO_CONTENT)
+            return '', status.HTTP_200_OK
         except SQLAlchemyError as e:
             db.session.rollback()
             resp = jsonify({"error": str(e)})

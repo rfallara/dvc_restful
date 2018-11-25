@@ -2,7 +2,7 @@ import os
 import gcp_auth
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-DEBUG = True
+DEBUG = False
 PORT = 5000
 HOST = "127.0.0.1"
 SQLALCHEMY_ECHO = False
