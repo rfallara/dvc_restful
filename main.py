@@ -1,3 +1,4 @@
+from os import environ
 from app import create_app
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
@@ -7,8 +8,16 @@ app = create_app('config')
 CORS(app)
 app.config['JWT_SECRET_KEY'] = gcp_auth.token_secret
 jwt = JWTManager(app)
-app.config['DEBUG'] = False
-app.run()
+
+
+if environ.get('DEV_SERVER') is not None:
+    print('DEVELOPMENT ENVIRONMENT')
+    print(__name__)
+    app.run()
+else:
+    print('PRODUCTION ENVIRONMENT')
+
+# app.run()
 
 # print(__name__)
 # if __name__ == '__main__':
