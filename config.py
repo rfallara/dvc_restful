@@ -13,5 +13,7 @@ SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{DB_USER}:{DB_PASS}@{DB_ADDR}/
                             DB_ADDR=gcp_auth.gcp_db['db_addr'],
                             DB_NAME=gcp_auth.gcp_db['db_name'])
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
+SQLALCHEMY_POOL_RECYCLE = 60
+
 print('ACTIVE DB: ' + gcp_auth.gcp_db['db_name'])
 
