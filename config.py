@@ -2,10 +2,10 @@ import os
 import gcp_auth
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-DEBUG = False
+DEBUG = True
 # PORT = 5000
 # HOST = "127.0.0.1"
-SQLALCHEMY_ECHO = False
+SQLALCHEMY_ECHO = True
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{DB_USER}:{DB_PASS}@{DB_ADDR}/{DB_NAME}".format(
                             DB_USER=gcp_auth.gcp_db['username'],
