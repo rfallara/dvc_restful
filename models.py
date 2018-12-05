@@ -38,6 +38,7 @@ def EventLogger(google_id, description):
     new_event.description = description
     return new_event
 
+
 class Owner(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True)
@@ -55,7 +56,7 @@ class Owner(db.Model, AddUpdateDelete):
 class OwnerEmail(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
     owner_email = db.Column(db.String(45), nullable=False, unique=True)
-    access_level = db.Column(db.Integer,nullable=False, server_default='2')
+    access_level = db.Column(db.Integer, nullable=False, server_default='2')
     owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
 
     def __init__(self, owner_email, owner, **kwargs):
@@ -106,7 +107,7 @@ class BookableRoom(db.Model, AddUpdateDelete):
         self.room_type = room_type
 
     def __repr__(self):
-        return "Bookable Room = %s at %s" %(self.room_type.name, self.resort.name)
+        return "Bookable Room = %s at %s" % (self.room_type.name, self.resort.name)
 
 
 class ActualPoint(db.Model, AddUpdateDelete):
@@ -247,8 +248,8 @@ class RoomTypeSchema(ma.Schema):
 class BookableRoomSchema(ma.Schema):
     id = fields.Integer(dump_only=True)
     url = ma.URLFor('api.bookableroomresource', id='<id>', _external=True)
-    resort = fields.Nested('ResortSchema', only=['id','name'], required=True)
-    room_type = fields.Nested('RoomTypeSchema', only=['id','name'], required=True)
+    resort = fields.Nested('ResortSchema', only=['id', 'name'], required=True)
+    room_type = fields.Nested('RoomTypeSchema', only=['id', 'name'], required=True)
 
 
 class ActualPointScheme(ma.Schema):
