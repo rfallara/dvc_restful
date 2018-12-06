@@ -22,10 +22,10 @@ class TripResource(Resource):
     @jwt_required
     def delete(self, trip_id: int):
         trip: Trip = db.session.query(Trip).get_or_404(trip_id)
-        personal_points: PersonalPoint = db.session.query(PersonalPoint).filter_by(trip_id=trip_id).all()
+        personal_points = db.session.query(PersonalPoint).filter_by(trip_id=trip_id).all()
         for point in personal_points:
             point.trip_id = None
-        actual_points: ActualPoint = db.session.query(ActualPoint).filter_by(trip_id=trip_id).all()
+        actual_points = db.session.query(ActualPoint).filter_by(trip_id=trip_id).all()
         for point in actual_points:
             point.trip_id = None
         try:
@@ -144,11 +144,7 @@ class TripListResource(Resource):
 
         # IF more personal points requirement was satisfied
         if personal_points_needed > 0:
-            print('Points needed - ' + str(new_trip.points_needed))
-            print('Personal Banked Points - ' + str(len(personal_points_banked)))
-            print('Personal Current Points - ' + str(len(personal_points_current)))
-            print('Personal Borrow Points - ' + str(len(personal_points_borrow)))
-            new_trip.delete(new_trip, "Removing Trip - Personal Points Short")
+            db.session.rollback()
             resp = {'message': 'personal points shortage of %s points' % personal_points_needed}
             return resp, status.HTTP_400_BAD_REQUEST
 
@@ -202,25 +198,21 @@ class TripListResource(Resource):
 
         # IF more personal points requirement was satisfied
         if actual_points_needed > 0:
-            print('Points needed - ' + str(new_trip.points_needed))
-            print('Actual Banked Points - ' + str(len(actual_points_banked)))
-            print('Actual Current Points - ' + str(len(actual_points_current)))
-            print('Actual Borrow Points - ' + str(len(actual_points_borrow)))
-            new_trip.delete(new_trip, "Removing Trip - Actual Point Short")
+            db.session.rollback()
             resp = {'message': 'actual points shortage of %s points' % actual_points_needed}
             return resp, status.HTTP_400_BAD_REQUEST
 
-        print('All points requirements satisfied, ok to book trip')
-        print('Points needed - ' + str(new_trip.points_needed))
-        print('Personal Banked Points - ' + str(len(personal_points_banked)))
-        print('Personal Current Points - ' + str(len(personal_points_current)))
-        print('Personal Borrow Points - ' + str(len(personal_points_borrow)))
-        print('Actual Banked Points - ' + str(len(actual_points_banked)))
-        print('Actual Current Points - ' + str(len(actual_points_current)))
-        print('Actual Borrow Points - ' + str(len(actual_points_borrow)))
-
         # ALL is good commit to db and return success
         try:
+            db.session.add(EventLogger('test@fallara.net', 'CREATE - ' + new_trip.__repr__()))
+            db.session.add(EventLogger('test@fallara.net',
+                                       'Personal Points Allocated: [%s,%s,%s]' % (len(personal_points_banked),
+                                                                                  len(personal_points_current),
+                                                                                  len(personal_points_borrow))))
+            db.session.add(EventLogger('test@fallara.net',
+                                       'Actual Points Allocated: [%s,%s,%s]' % (len(actual_points_banked),
+                                                                                len(actual_points_current),
+                                                                                len(actual_points_borrow))))
             db.session.commit()
             result = trip_schema.dump(new_trip).data
             return result, status.HTTP_201_CREATED
