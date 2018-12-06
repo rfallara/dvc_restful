@@ -32,15 +32,12 @@ class TripResource(Resource):
             db.session.add(EventLogger('test@fallara.net', 'DELETE - ' + trip.__repr__()))
             db.session.delete(trip)
             db.session.commit()
-            # trip.delete(trip, log='DELETE - ' + trip.__repr__())
             return None, status.HTTP_200_OK
         except SQLAlchemyError as e:
             db.session.rollback()
             resp = jsonify({"error": str(e)})
             resp.status_code = status.HTTP_401_UNAUTHORIZED
             return resp
-
-
 
 
 class TripListResource(Resource):
@@ -74,17 +71,13 @@ class TripListResource(Resource):
                 # Resort does not exist
                 resp = {'message': 'bookable room does not exist'}
                 return resp, status.HTTP_400_BAD_REQUEST
-            # new_trip.bookable_room_id = trip_bookable_room.id
             new_trip = Trip(trip_owner, trip_bookable_room)
-            # new_trip.check_in_date = request_dict['check_in_date']
             new_trip.check_in_date = datetime.strptime(request_dict['check_in_date'].split('T')[0], '%Y-%m-%d')
-            # new_trip.check_out_date = request_dict['check_out_date']
             new_trip.check_out_date = datetime.strptime(request_dict['check_out_date'].split('T')[0], '%Y-%m-%d')
             if new_trip.check_in_date >= new_trip.check_out_date:
                 resp = {'message': 'check out must be after check in date'}
                 return resp, status.HTTP_400_BAD_REQUEST
             new_trip.booked_date = datetime.strptime(request_dict['booked_date'].split('T')[0], '%Y-%m-%d')
-            # new_trip.booked_date = request_dict['booked_date']
             new_trip.notes = request_dict['notes']
             new_trip.points_needed = request_dict['points_needed']
             if new_trip.points_needed < 0:
