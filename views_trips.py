@@ -6,7 +6,7 @@ import status
 from flask_jwt_extended import jwt_required
 from dateutil.relativedelta import *
 from datetime import datetime
-from models import db, PersonalPoint, ActualPoint
+from models import db, PersonalPoint, ActualPoint, EventLogger
 from sqlalchemy import or_
 
 trip_schema = TripSchema()
@@ -18,6 +18,29 @@ class TripResource(Resource):
         trip = Trip.query.get_or_404(trip_id)
         result = trip_schema.dump(trip).data
         return result
+
+    @jwt_required
+    def delete(self, trip_id: int):
+        trip: Trip = db.session.query(Trip).get_or_404(trip_id)
+        personal_points: PersonalPoint = db.session.query(PersonalPoint).filter_by(trip_id=trip_id).all()
+        for point in personal_points:
+            point.trip_id = None
+        actual_points: ActualPoint = db.session.query(ActualPoint).filter_by(trip_id=trip_id).all()
+        for point in actual_points:
+            point.trip_id = None
+        try:
+            db.session.add(EventLogger('test@fallara.net', 'DELETE - ' + trip.__repr__()))
+            db.session.delete(trip)
+            db.session.commit()
+            # trip.delete(trip, log='DELETE - ' + trip.__repr__())
+            return None, status.HTTP_200_OK
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            resp = jsonify({"error": str(e)})
+            resp.status_code = status.HTTP_401_UNAUTHORIZED
+            return resp
+
+
 
 
 class TripListResource(Resource):

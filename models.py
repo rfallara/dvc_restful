@@ -156,6 +156,13 @@ class Trip(db.Model, AddUpdateDelete):
         self.owner = owner
         self.bookable_room = bookable_room
 
+    def __repr__(self):
+        return "Trip - %s(%s %s-%s) %s" % (self.id, self.owner.name,
+                                           self.bookable_room.resort.name,
+                                           self.bookable_room.room_type.name,
+                                           self.check_in_date)
+
+
 class EventLog(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, server_default=func.now(), nullable=False)
@@ -276,7 +283,7 @@ class PersonalPointSchema(ma.Schema):
 
 class TripSchema(ma.Schema):
     id = fields.Integer(dump_only=True)
-    url = ma.URLFor('api.tripresource', id='<id>', _external=True)
+    url = ma.URLFor('api.tripresource', trip_id='<id>', _external=True)
     check_in_date = fields.DateTime(required=True)
     check_out_date = fields.DateTime(required=True)
     notes = fields.String(validate=validate.Length(max=4095))
