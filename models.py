@@ -13,6 +13,7 @@ ma = Marshmallow()
 
 google_id = "test@test.com"
 
+
 class AddUpdateDelete():
     def add(self, resource, log=""):
         db.session.add(resource)
@@ -100,7 +101,7 @@ class BookableRoom(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
     resort_id = db.Column(db.Integer, db.ForeignKey('resort.id'), nullable=False)
     room_type_id = db.Column(db.Integer, db.ForeignKey('room_type.id'), nullable=False)
-    trips = db.relationship('Trip', backref='bookable_room', lazy='dynamic')
+    trips = db.relationship('Trip', backref='bookable_room')
 
     def __init__(self, resort, room_type):
         self.resort = resort
@@ -151,6 +152,9 @@ class Trip(db.Model, AddUpdateDelete):
     booked_date = db.Column(db.DateTime, nullable=False)
     points_needed = db.Column(db.Integer, nullable=False)
 
+    def __init__(self, owner, bookable_room):
+        self.owner = owner
+        self.bookable_room = bookable_room
 
 class EventLog(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
