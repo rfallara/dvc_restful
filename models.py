@@ -3,11 +3,16 @@ from marshmallow import validate
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from sqlalchemy.sql import func
+import datetime
+import gcp_auth
+import jwt
+
 
 db = SQLAlchemy()
 ma = Marshmallow()
 
 google_id = "test@test.com"
+
 
 class AddUpdateDelete():
     def add(self, resource, log=""):
@@ -34,6 +39,7 @@ def EventLogger(google_id, description):
     new_event.description = description
     return new_event
 
+
 class Owner(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True)
@@ -51,7 +57,7 @@ class Owner(db.Model, AddUpdateDelete):
 class OwnerEmail(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
     owner_email = db.Column(db.String(45), nullable=False, unique=True)
-    access_level = db.Column(db.Integer,nullable=False, server_default='2')
+    access_level = db.Column(db.Integer, nullable=False, server_default='2')
     owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
 
     def __init__(self, owner_email, owner, **kwargs):
@@ -95,14 +101,14 @@ class BookableRoom(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
     resort_id = db.Column(db.Integer, db.ForeignKey('resort.id'), nullable=False)
     room_type_id = db.Column(db.Integer, db.ForeignKey('room_type.id'), nullable=False)
-    trips = db.relationship('Trip', backref='bookable_room', lazy='dynamic')
+    trips = db.relationship('Trip', backref='bookable_room')
 
     def __init__(self, resort, room_type):
         self.resort = resort
         self.room_type = room_type
 
     def __repr__(self):
-        return "Bookable Room = %s at %s" %(self.room_type.name, self.resort.name)
+        return "Bookable Room = %s at %s" % (self.room_type.name, self.resort.name)
 
 
 class ActualPoint(db.Model, AddUpdateDelete):
@@ -146,6 +152,16 @@ class Trip(db.Model, AddUpdateDelete):
     booked_date = db.Column(db.DateTime, nullable=False)
     points_needed = db.Column(db.Integer, nullable=False)
 
+    def __init__(self, owner, bookable_room):
+        self.owner = owner
+        self.bookable_room = bookable_room
+
+    def __repr__(self):
+        return "Trip - %s(%s %s-%s) %s" % (self.id, self.owner.name,
+                                           self.bookable_room.resort.name,
+                                           self.bookable_room.room_type.name,
+                                           self.check_in_date)
+
 
 class EventLog(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
@@ -153,6 +169,49 @@ class EventLog(db.Model, AddUpdateDelete):
     google_id = db.Column(db.String(45), nullable=False)
     description = db.Column(db.String(4095), nullable=False)
 
+
+class TokenUser(db.Model, AddUpdateDelete):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(45), nullable=False)
+    password = db.Column(db.String(45), nullable=False)
+
+    def encode_auth_token(self, user_id):
+        """
+        Generates the Auth Token
+        :return: string
+        """
+        try:
+            payload = {
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=600),
+                'iat': datetime.datetime.utcnow(),
+                'sub': user_id
+            }
+            return jwt.encode(
+                payload,
+                gcp_auth.token_secret,
+                algorithm='HS256'
+            )
+        except Exception as e:
+            return e
+
+    @staticmethod
+    def decode_auth_token(auth_token):
+        """
+        Validates the auth token
+        :param auth_token:
+        :return: integer|string
+        """
+        try:
+            payload = jwt.decode(auth_token, gcp_auth.token_secret)
+            # is_blacklisted_token = BlacklistToken.check_blacklist(auth_token)
+            # if is_blacklisted_token:
+            #     return 'Token blacklisted. Please log in again.'
+            # else:
+            return payload['sub']
+        except jwt.ExpiredSignatureError:
+            return 'Signature expired. Please log in again.'
+        except jwt.InvalidTokenError:
+            return 'Invalid token. Please log in again.'
 
 
 class OwnerSchema(ma.Schema):
@@ -200,8 +259,8 @@ class RoomTypeSchema(ma.Schema):
 class BookableRoomSchema(ma.Schema):
     id = fields.Integer(dump_only=True)
     url = ma.URLFor('api.bookableroomresource', id='<id>', _external=True)
-    resort = fields.Nested('ResortSchema', only=['id','name'], required=True)
-    room_type = fields.Nested('RoomTypeSchema', only=['id','name'], required=True)
+    resort = fields.Nested('ResortSchema', only=['id', 'name'], required=True)
+    room_type = fields.Nested('RoomTypeSchema', only=['id', 'name'], required=True)
 
 
 class ActualPointScheme(ma.Schema):
@@ -224,7 +283,7 @@ class PersonalPointSchema(ma.Schema):
 
 class TripSchema(ma.Schema):
     id = fields.Integer(dump_only=True)
-    url = ma.URLFor('api.tripresource', id='<id>', _external=True)
+    url = ma.URLFor('api.tripresource', trip_id='<id>', _external=True)
     check_in_date = fields.DateTime(required=True)
     check_out_date = fields.DateTime(required=True)
     notes = fields.String(validate=validate.Length(max=4095))
