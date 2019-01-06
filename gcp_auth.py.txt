@@ -1,0 +1,9 @@
+
+gcp_db = {
+    'username': '',
+    'password': '',
+    'db_addr': '',
+    'db_name': ''
+}
+
+token_secret = b''
