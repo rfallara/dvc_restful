@@ -3,16 +3,19 @@ from flask_restful import Resource
 from sqlalchemy.exc import SQLAlchemyError
 from models import db, Owner, OwnerSchema, OwnerEmail, OwnerEmailSchema
 import status
+from flask_jwt_extended import jwt_required
 
 owner_schema = OwnerSchema()
 owner_email_schema = OwnerEmailSchema()
 
 class OwnerResource(Resource):
+    @jwt_required
     def get(self, id):
         owner = Owner.query.get_or_404(id)
         result = owner_schema.dump(owner).data
         return result
 
+    @jwt_required
     def put(self, id):
         owner = Owner.query.get_or_404(id)
         update_dict = request.get_json()
@@ -33,6 +36,7 @@ class OwnerResource(Resource):
                 resp.status_code = status.HTTP_400_BAD_REQUEST
                 return resp
 
+    @jwt_required
     def delete(self, id):
         owner = Owner.query.get_or_404(id)
         try:
@@ -47,11 +51,13 @@ class OwnerResource(Resource):
 
 
 class OwnerListResource(Resource):
+    @jwt_required
     def get(self):
         owners = Owner.query.order_by(Owner.id).all()
         result = owner_schema.dump(owners, many=True).data
         return result
 
+    @jwt_required
     def post(self):
         request_dict = request.get_json()
         if not request_dict:
@@ -74,11 +80,13 @@ class OwnerListResource(Resource):
 
 
 class OwnerEmailResource(Resource):
+    @jwt_required
     def get(self, id):
         owner_email = OwnerEmail.query.get_or_404(id)
         result = owner_email_schema.dump(owner_email).data
         return result
 
+    @jwt_required
     def put(self, id):
         owner_email = OwnerEmail.query.get_or_404(id)
         update_dict = request.get_json()
@@ -104,7 +112,7 @@ class OwnerEmailResource(Resource):
             resp.status_code = status.HTTP_400_BAD_REQUEST
             return resp
 
-
+    @jwt_required
     def delete(self, id):
         owner_email = OwnerEmail.query.get_or_404(id)
         try:
@@ -118,11 +126,13 @@ class OwnerEmailResource(Resource):
 
 
 class OwnerEmailListResource(Resource):
+    @jwt_required
     def get(self):
         owner_emails = OwnerEmail.query.all()
         result = owner_email_schema.dump(owner_emails, many=True).data
         return result
 
+    @jwt_required
     def post(self):
         request_dict = request.get_json()
         if not request_dict:
