@@ -36,7 +36,7 @@ class ResortResource(Resource):
         if validate_errors:
             return validate_errors, status.HTTP_400_BAD_REQUEST
         try:
-            resort.update(log = "UPDATE " + resort.__repr__())
+            resort.update(log="UPDATE " + resort.__repr__())
             return self.get(id)
         except SQLAlchemyError as e:
             db.session.rollback()
