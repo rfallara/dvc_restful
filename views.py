@@ -5,7 +5,7 @@ from views_owner import OwnerResource, OwnerListResource, OwnerEmailResource, Ow
 from views_resorts import ResortResource, ResortListResource, RoomTypeResource, RoomTypeListResource, \
     BookableRoomResource, BookableRoomListResource
 from views_points import ActualPointResource, ActualPointListResource, ActualPointCountResource,\
-    PersonalPointResource, PersonalPointListResource, PersonalPointCountResource
+    PersonalPointResource, PersonalPointListResource, PersonalPointCountResource, PointCount
 from views_trips import TripResource, TripListResource
 
 
@@ -29,5 +29,6 @@ api.add_resource(ActualPointCountResource, '/actual_points_count/')
 api.add_resource(PersonalPointResource, '/personal_points/<int:id>')
 api.add_resource(PersonalPointListResource, '/personal_points/')
 api.add_resource(PersonalPointCountResource, '/personal_points_count/<int:owner_id>')
+api.add_resource(PointCount, '/points_count/<int:owner_id>')
 api.add_resource(TripResource, '/trips/<int:trip_id>')
 api.add_resource(TripListResource, '/trips/')
