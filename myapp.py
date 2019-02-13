@@ -59,4 +59,15 @@ class BookableRoom(db.Model):
         return "Bookable Room = %s at %s" % (self.room_type.name, self.resort.name)
 
 
+class PersonalPoint(db.Model):
+    id = db.Column(db.Integer, unique=True, nullable=False, primary_key=False, autoincrement=True)
+    use_year = db.Column(db.DateTime, primary_key=True)
+    point_number = db.Column(db.Integer, primary_key=True, autoincrement=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), primary_key=True)
+    # trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'))
+
+    def __init__(self, use_year, point_number, owner_id):
+        self.use_year = use_year
+        self.point_number = point_number
+        self.owner_id = owner_id
 

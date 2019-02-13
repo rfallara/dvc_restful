@@ -1,15 +1,26 @@
 from flask import request
 from flask_restful import Resource
-from models import TokenUser
+from models import TokenUser, OwnerEmail, Owner
 import status
 from flask_jwt_extended import create_access_token, create_refresh_token, decode_token
 from datetime import timedelta
+from google.oauth2 import id_token
+from google.auth.transport import requests
+import time
 
 
 class Token(Resource):
     def post(self):
         # get the post data
         post_data = request.get_json()
+        if post_data.get('username') and post_data('password'):
+            return self.traditional_login(post_data)
+        elif post_data.get('google_id_token'):
+            return self.google_auth_login(post_data)
+
+    @staticmethod
+    def traditional_login(post_data):
+
         try:
             # fetch the user data
             user = TokenUser.query.filter_by(
@@ -31,7 +42,10 @@ class Token(Resource):
                     'message': 'Successfully logged in.',
                     'access_token': access_token,
                     'refresh_token': refresh_token,
-                    'exp': decoded_token['exp']
+                    'exp': decoded_token['exp'],
+                    'owner': '',
+                    'email': '',
+                    'picture': ''
                 }
                 return response_object, status.HTTP_201_CREATED
             else:
@@ -50,3 +64,50 @@ class Token(Resource):
             return response_object, status.HTTP_500_INTERNAL_SERVER_ERROR
             # return make_response(jsonify(response_object)), 500
 
+    @staticmethod
+    def google_auth_login(post_data):
+        token = post_data.get('google_id_token')
+        client_id = '352426068501-r1o358blf1hqnhvnh5olce4b5toasadj.apps.googleusercontent.com'
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), client_id)
+        # check issuer
+        if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            response_object = {
+                'status': 'fail',
+                'message': 'Not a valid issuer.'
+            }
+            return response_object, status.HTTP_401_UNAUTHORIZED
+
+        # check expired
+        if idinfo['exp'] < time.time():
+            response_object = {
+                'status': 'fail',
+                'message': 'Token is expired'
+            }
+            return response_object, status.HTTP_401_UNAUTHORIZED
+
+        # find a valid owner email
+        # owner = OwnerEmail.query.filter_by(owner_email = idinfo['email']).first()
+        owner = Owner.query.join(OwnerEmail).filter(OwnerEmail.owner_email == idinfo['email']).first()
+        if owner:
+            access_token = create_access_token(identity=idinfo['email'],
+                                               expires_delta=timedelta(minutes=60))
+            refresh_token = create_refresh_token(identity=idinfo['email'])
+            decoded_token = decode_token(access_token)
+
+            response_object = {
+                'status': 'success',
+                'message': 'Successfully logged in.',
+                'access_token': access_token,
+                'refresh_token': refresh_token,
+                'exp': decoded_token['exp'],
+                'owner': owner.name,
+                'email': idinfo['email'],
+                'picture': idinfo['picture']
+            }
+            return response_object, status.HTTP_201_CREATED
+        else:
+            response_object = {
+                'status': 'fail',
+                'message': 'Matching owner email not found'
+            }
+            return response_object, status.HTTP_401_UNAUTHORIZED

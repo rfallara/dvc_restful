@@ -1,5 +1,5 @@
 from flask_restful import Resource, reqparse
-from models import ActualPoint, ActualPointScheme, PersonalPoint, PersonalPointSchema
+from models import ActualPoint, ActualPointScheme, PersonalPoint, PersonalPointSchema, Owner, OwnerEmail
 from flask_jwt_extended import jwt_required
 from dateutil.relativedelta import *
 import datetime
@@ -26,11 +26,11 @@ class ActualPointListResource(Resource):
 
 def get_actual_point_count(reference_date):
     banked_count = len(ActualPoint.query.
-                           filter(ActualPoint.use_year < (reference_date + relativedelta(years=-1)),
-                                  ActualPoint.use_year > (reference_date + relativedelta(years=-2))).
-                           filter(ActualPoint.trip_id.is_(None)).
-                           filter(ActualPoint.banked_date.isnot(None)).
-                           all())
+                       filter(ActualPoint.use_year < (reference_date + relativedelta(years=-1)),
+                              ActualPoint.use_year > (reference_date + relativedelta(years=-2))).
+                       filter(ActualPoint.trip_id.is_(None)).
+                       filter(ActualPoint.banked_date.isnot(None)).
+                       all())
     current_count = len(ActualPoint.query.
                         filter(ActualPoint.use_year < reference_date,
                                ActualPoint.use_year > (reference_date + relativedelta(years=-1))).
@@ -63,7 +63,6 @@ class ActualPointCountResource(Resource):
         return get_actual_point_count(reference_date)
 
 
-
 class PersonalPointResource(Resource):
     @jwt_required
     def get(self, id):
@@ -80,21 +79,27 @@ class PersonalPointListResource(Resource):
         return result
 
 
-def get_personal_point_count(owner_id, reference_date):
+def get_personal_point_count(email, reference_date):
     banked_count = len(PersonalPoint.query.
+                       join(Owner).join(OwnerEmail).
+                       filter(OwnerEmail.owner_email == email).
                        filter(PersonalPoint.use_year < (reference_date + relativedelta(years=-1))).
                        filter(PersonalPoint.trip_id.is_(None)).
-                       filter(PersonalPoint.owner_id == owner_id).all())
+                       all())
     current_count = len(PersonalPoint.query.
+                        join(Owner).join(OwnerEmail).
+                        filter(OwnerEmail.owner_email == email).
                         filter(PersonalPoint.use_year < reference_date,
                                PersonalPoint.use_year > (reference_date + relativedelta(years=-1))).
                         filter(PersonalPoint.trip_id.is_(None)).
-                        filter(PersonalPoint.owner_id == owner_id).all())
+                        all())
     borrow_count = len(PersonalPoint.query.
+                       join(Owner).join(OwnerEmail).
+                       filter(OwnerEmail.owner_email == email).
                        filter(PersonalPoint.use_year < (reference_date + relativedelta(years=+1)),
                               PersonalPoint.use_year > reference_date).
                        filter(PersonalPoint.trip_id.is_(None)).
-                       filter(PersonalPoint.owner_id == owner_id).all())
+                       all())
     return {'banked': banked_count,
             'current': current_count,
             'borrow': borrow_count}
@@ -109,9 +114,9 @@ class PersonalPointCountResource(Resource):
 
 class PointCount(Resource):
     @jwt_required
-    def get(self, owner_id):
+    def get(self, owner_email):
         reference_date = datetime.datetime.now()
-        personal_points = get_personal_point_count(owner_id, reference_date)
+        personal_points = get_personal_point_count(owner_email, reference_date)
         actual_points = get_actual_point_count(reference_date)
 
         return {'actual_points': actual_points,
