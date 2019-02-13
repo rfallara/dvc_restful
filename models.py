@@ -43,7 +43,7 @@ def EventLogger(google_id, description):
 class Owner(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True)
-    emails = db.relationship('OwnerEmail', backref=db.backref('owner', lazy='joined'), lazy='joined')
+    email = db.relationship('OwnerEmail', backref=db.backref('owner', lazy='joined'), lazy='joined')
     person_points = db.relationship('PersonalPoint', backref='owner', lazy='select')
     trips = db.relationship('Trip', backref=db.backref('owner', lazy='joined'), lazy='select')
 
@@ -218,7 +218,8 @@ class OwnerSchema(ma.Schema):
     id = fields.Integer(dump_only=True)
     url = ma.URLFor('api.ownerresource', id='<id>', _external=True)
     name = fields.String(required=True, validate=validate.Length(3))
-    emails = fields.Nested('OwnerEmailSchema', many=True, exclude=('owner',))
+    email = fields.Nested('OwnerEmailSchema', many=True)
+    # email = fields.Nested('OwnerEmailSchema', many=True, exclude=('owner',))
 
 
 class OwnerEmailSchema(ma.Schema):
@@ -226,7 +227,7 @@ class OwnerEmailSchema(ma.Schema):
     url = ma.URLFor('api.owneremailresource', id='<id>', _external=True)
     owner_email = fields.String(required=True, validate=validate.Email())
     access_level = fields.Integer()
-    owner = fields.Nested('OwnerSchema', only=['id', 'name', 'url'], required=True)
+    # owner = fields.Nested('OwnerSchema', only=['id', 'name', 'url'], required=True)
 
     @pre_load
     def process_owner(self, data):
