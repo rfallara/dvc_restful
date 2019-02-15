@@ -60,7 +60,7 @@ class ResortResource(Resource):
 class ResortListResource(Resource):
     @jwt_required
     def get(self):
-        resort = Resort.query.all()
+        resort = Resort.query.order_by(Resort.name).all()
         result = resort_schema.dump(resort, many=True).data
         return result
 
@@ -136,7 +136,7 @@ class RoomTypeResource(Resource):
 class RoomTypeListResource(Resource):
     @jwt_required
     def get(self):
-        room_type = RoomType.query.all()
+        room_type = RoomType.query.order_by(RoomType.name).all()
         result = room_type_schema.dump(room_type, many=True).data
         return result
 
