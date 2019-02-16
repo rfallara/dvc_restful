@@ -1,19 +1,21 @@
-from flask import request
-from flask_restful import Resource
-from models import TokenUser, OwnerEmail, Owner
-import status
-from flask_jwt_extended import create_access_token, create_refresh_token, decode_token
-from datetime import timedelta
-from google.oauth2 import id_token
-from google.auth.transport import requests
 import time
+from datetime import timedelta
+
+from flask import request
+from flask_jwt_extended import create_access_token, create_refresh_token, decode_token
+from flask_restful import Resource
+from google.auth.transport import requests
+from google.oauth2 import id_token
+
+import status
+from models import TokenUser, OwnerEmail, Owner
 
 
 class Token(Resource):
     def post(self):
         # get the post data
         post_data = request.get_json()
-        if post_data.get('username') and post_data('password'):
+        if post_data.get('username'):
             return self.traditional_login(post_data)
         elif post_data.get('google_id_token'):
             return self.google_auth_login(post_data)
