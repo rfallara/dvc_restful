@@ -165,5 +165,9 @@ class BankPointResource(Resource):
 
         db.session.add(EventLogger('test@google.com', log))
         db.session.commit()
+        resp = jsonify({})
+        resp.status_code = status.HTTP_201_CREATED
+        return resp
+
 
 

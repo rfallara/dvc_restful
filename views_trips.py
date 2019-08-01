@@ -167,7 +167,7 @@ class TripListResource(Resource):
         if actual_points_needed > 0:
 
             actual_points_current = db.session.query(ActualPoint)\
-                .filter(ActualPoint.use_year < current_use_year, ActualPoint.use_year > previous_two_use_year)\
+                .filter(ActualPoint.use_year < current_use_year, ActualPoint.use_year > previous_use_year)\
                 .filter(ActualPoint.trip_id.is_(None))\
                 .filter(or_(ActualPoint.banked_date.is_(None), ActualPoint.banked_date > booked_date)) \
                 .order_by("use_year").order_by("point_number") \
