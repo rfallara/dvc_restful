@@ -11,6 +11,8 @@ runtime: python37
 #api_version: 1
 #threadsafe: yes ---not supported in python37 runtime
 
+service: api
+
 entrypoint: gunicorn wsgi
 # Handlers define how to route requests to your application.
 handlers:
