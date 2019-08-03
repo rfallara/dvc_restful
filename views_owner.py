@@ -1,12 +1,15 @@
 from flask import request, jsonify
 from flask_restful import Resource
 from sqlalchemy.exc import SQLAlchemyError
-from models import db, Owner, OwnerSchema, OwnerEmail, OwnerEmailSchema
+from models import db, Owner, OwnerSchema, OwnerEmail, OwnerEmailSchema, PersonalPoint
 import status
+import datetime
+from dateutil.relativedelta import *
 from flask_jwt_extended import jwt_required
 
 owner_schema = OwnerSchema()
 owner_email_schema = OwnerEmailSchema()
+
 
 class OwnerResource(Resource):
     @jwt_required
@@ -41,10 +44,10 @@ class OwnerResource(Resource):
         owner = Owner.query.get_or_404(id)
         try:
             owner.delete(owner)
-            return ('', status.HTTP_204_NO_CONTENT)
+            return '', status.HTTP_204_NO_CONTENT
         except SQLAlchemyError as e:
                 db.session.rollback()
-                #resp = jsonify({"error": str(e)})
+                # resp = jsonify({"error": str(e)})
                 resp = jsonify({"error": "Unable to delete owner"})
                 resp.status_code = status.HTTP_401_UNAUTHORIZED
                 return resp
@@ -117,7 +120,7 @@ class OwnerEmailResource(Resource):
         owner_email = OwnerEmail.query.get_or_404(id)
         try:
             owner_email.delete(owner_email)
-            return ('', status.HTTP_204_NO_CONTENT)
+            return '', status.HTTP_204_NO_CONTENT
         except SQLAlchemyError as e:
                 db.session.rollback()
                 resp = jsonify({"error": str(e)})
@@ -162,3 +165,50 @@ class OwnerEmailListResource(Resource):
             resp = jsonify({"error": str(e)})
             resp.status_code = status.HTTP_400_BAD_REQUEST
             return resp
+
+
+class OwnerDetailedResource(Resource):
+
+
+    @jwt_required
+    def get(self, owner_id):
+        current_owner = Owner.query.get_or_404(owner_id)
+        # current_owner = Owner.query.join(OwnerEmail).filter(OwnerEmail.owner_email == email).first()
+
+        reference_date = datetime.datetime.now()
+
+        banked_count = len(PersonalPoint.query.
+                           join(Owner).
+                           filter(Owner.id == current_owner.id).
+                           filter(PersonalPoint.use_year < (reference_date + relativedelta(years=-1))).
+                           filter(PersonalPoint.trip_id.is_(None)).
+                           all())
+
+        current_count = len(PersonalPoint.query.
+                            join(Owner).
+                            filter(Owner.id == current_owner.id).
+                            filter(PersonalPoint.use_year < reference_date,
+                                   PersonalPoint.use_year > (reference_date + relativedelta(years=-1))).
+                            filter(PersonalPoint.trip_id.is_(None)).
+                            all())
+        borrow_count = len(PersonalPoint.query.
+                           join(Owner).
+                           filter(Owner.id == current_owner.id).
+                           filter(PersonalPoint.use_year < (reference_date + relativedelta(years=+1)),
+                                  PersonalPoint.use_year > reference_date).
+                           filter(PersonalPoint.trip_id.is_(None)).
+                           all())
+        # return {'banked': banked_count,
+        #         'current': current_count,
+        #         'borrow': borrow_count}
+
+        current_owner_data = owner_schema.dump(current_owner).data
+
+        return {
+            'owner': current_owner_data,
+            'personal_points': {'banked': banked_count,
+                                'current': current_count,
+                                'borrow': borrow_count}
+
+        }
+

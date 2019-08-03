@@ -110,9 +110,9 @@ def get_personal_point_count(email, reference_date):
 
 class PersonalPointCountResource(Resource):
     @jwt_required
-    def get(self, owner_id):
+    def get(self, owner_email):
         reference_date = datetime.datetime.now()
-        return get_personal_point_count(owner_id, reference_date)
+        return get_personal_point_count(owner_email, reference_date)
 
 
 class PointCount(Resource):
