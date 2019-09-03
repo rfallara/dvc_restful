@@ -46,4 +46,4 @@ SQLAlchemy==1.3.5
 sqlautocode==0.7
 uritemplate==3.0.0
 urllib3==1.25.3
-Werkzeug==0.14.1
+Werkzeug==0.15.5
