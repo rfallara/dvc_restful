@@ -3,10 +3,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from flask_restful import Resource
 from models import Trip, TripSchema, Owner, BookableRoom
 import status
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from dateutil.relativedelta import *
 from datetime import datetime
-from models import db, PersonalPoint, ActualPoint, EventLogger
+from models import db, PersonalPoint, ActualPoint, event_logger
 from sqlalchemy import or_
 
 trip_schema = TripSchema()
@@ -29,7 +29,7 @@ class TripResource(Resource):
         for point in actual_points:
             point.trip_id = None
         try:
-            db.session.add(EventLogger('test@fallara.net', 'DELETE - ' + trip.__repr__()))
+            db.session.add(event_logger(get_jwt_identity(), 'DELETE - ' + trip.__repr__()))
             db.session.delete(trip)
             db.session.commit()
             return None, status.HTTP_200_OK
@@ -204,12 +204,12 @@ class TripListResource(Resource):
 
         # ALL is good commit to db and return success
         try:
-            db.session.add(EventLogger('test@fallara.net', 'CREATE - ' + new_trip.__repr__()))
-            db.session.add(EventLogger('test@fallara.net',
+            db.session.add(event_logger(get_jwt_identity(), 'CREATE - ' + new_trip.__repr__()))
+            db.session.add(event_logger(get_jwt_identity(),
                                        'Personal Points Allocated: [%s,%s,%s]' % (len(personal_points_banked),
                                                                                   len(personal_points_current),
                                                                                   len(personal_points_borrow))))
-            db.session.add(EventLogger('test@fallara.net',
+            db.session.add(event_logger(get_jwt_identity(),
                                        'Actual Points Allocated: [%s,%s,%s]' % (len(actual_points_banked),
                                                                                 len(actual_points_current),
                                                                                 len(actual_points_borrow))))

@@ -1,12 +1,10 @@
 from flask import request, jsonify
 from flask_restful import Resource
 from sqlalchemy.exc import SQLAlchemyError
-from models import db, Resort, ResortSchema, RoomType, RoomTypeSchema, BookableRoom, BookableRoomSchema, EventLogger
-from flask_jwt_extended import jwt_required
+from models import db, Resort, ResortSchema, RoomType, RoomTypeSchema, BookableRoom, BookableRoomSchema, event_logger
+from flask_jwt_extended import jwt_required, get_jwt_identity
 import status
 
-
-google_id = "test@fallara.net"
 
 resort_schema = ResortSchema()
 room_type_schema = RoomTypeSchema()
@@ -36,7 +34,8 @@ class ResortResource(Resource):
         if validate_errors:
             return validate_errors, status.HTTP_400_BAD_REQUEST
         try:
-            resort.update(log="UPDATE " + resort.__repr__())
+            resort.update()
+            resort.add(event_logger(get_jwt_identity(), "UPDATE " + resort.__repr__()))
             return self.get(id)
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -48,7 +47,8 @@ class ResortResource(Resource):
     def delete(self, id):
         resort = Resort.query.get_or_404(id)
         try:
-            resort.delete(resort, log="DELETE - " + resort.__repr__())
+            resort.delete(resort)
+            resort.add(event_logger(get_jwt_identity(), "DELETE - " + resort.__repr__()))
             return None, status.HTTP_200_OK
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -76,7 +76,7 @@ class ResortListResource(Resource):
         try:
             resort = Resort(request_dict['name'])
             resort.add(resort)
-            resort.add(EventLogger(google_id, "ADD "+ resort.__repr__()))
+            resort.add(event_logger(get_jwt_identity(), "ADD - " + resort.__repr__()))
             query = Resort.query.get(resort.id)
             result = resort_schema.dump(query).data
             return result, status.HTTP_201_CREATED
@@ -112,7 +112,8 @@ class RoomTypeResource(Resource):
         if validate_errors:
             return validate_errors, status.HTTP_400_BAD_REQUEST
         try:
-            room_type.update(log="UPDATE - " + room_type.__repr__())
+            room_type.update()
+            room_type.add(event_logger(get_jwt_identity(), "UPDATE - " + room_type.__repr__()))
             return self.get(id)
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -124,7 +125,8 @@ class RoomTypeResource(Resource):
     def delete(self, id):
         room_type = RoomType.query.get_or_404(id)
         try:
-            room_type.delete(room_type, log="DELETE - " + room_type.__repr__())
+            room_type.delete(room_type)
+            room_type.add(event_logger(get_jwt_identity(), "DELETE - " + room_type.__repr__()))
             return None, status.HTTP_200_OK
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -154,7 +156,7 @@ class RoomTypeListResource(Resource):
             if 'sleeps' in request_dict:
                 room_type.sleeps = request_dict['sleeps']
             room_type.add(room_type)
-            room_type.add(EventLogger(google_id, "ADD - " + room_type.__repr__()))
+            room_type.add(event_logger(get_jwt_identity(), "ADD - " + room_type.__repr__()))
             query = RoomType.query.get(room_type.id)
             result = room_type_schema.dump(query).data
             return result, status.HTTP_201_CREATED
@@ -202,7 +204,8 @@ class BookableRoomResource(Resource):
         if validate_errors:
             return validate_errors, status.HTTP_400_BAD_REQUEST
         try:
-            bookable_room.update(log="UPDATE - " + bookable_room.__repr__())
+            bookable_room.update()
+            bookable_room.add(event_logger(get_jwt_identity(), "UPDATE - " + bookable_room.__repr__()))
             return self.get(id)
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -214,7 +217,8 @@ class BookableRoomResource(Resource):
     def delete(self, id):
         bookable_room = BookableRoom.query.get_or_404(id)
         try:
-            bookable_room.delete(bookable_room, log="DELETE" + bookable_room.__repr__())
+            bookable_room.delete(bookable_room)
+            bookable_room.add(event_logger(get_jwt_identity(), "DELETE - " + bookable_room.__repr__()))
             return None, status.HTTP_200_OK
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -254,7 +258,7 @@ class BookableRoomListResource(Resource):
                 return resp, status.HTTP_400_BAD_REQUEST
             bookable_room = BookableRoom(resort, room_type)
             bookable_room.add(bookable_room)
-            bookable_room.add(EventLogger(google_id, "ADD - " + bookable_room.__repr__()))
+            bookable_room.add(event_logger(get_jwt_identity(), "ADD - " + bookable_room.__repr__()))
             query = BookableRoom.query.get(bookable_room.id)
             result = bookable_room_schema.dump(query).data
             return result, status.HTTP_201_CREATED
