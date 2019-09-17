@@ -8,7 +8,7 @@ from google.auth.transport import requests
 from google.oauth2 import id_token
 
 import status
-from models import TokenUser, OwnerEmail, Owner, event_logger
+from models import TokenUser, OwnerEmail, Owner, event_logger, log_event
 
 
 class Token(Resource):
@@ -77,6 +77,7 @@ class Token(Resource):
                 'status': 'fail',
                 'message': 'Not a valid issuer.'
             }
+            log_event(idinfo['email'], 'UNAUTHORIZED - Not a valid user')
             return response_object, status.HTTP_401_UNAUTHORIZED
 
         # check expired
@@ -85,6 +86,7 @@ class Token(Resource):
                 'status': 'fail',
                 'message': 'Token is expired'
             }
+            log_event(idinfo['email'], 'UNAUTHORIZED - Token is expired')
             return response_object, status.HTTP_401_UNAUTHORIZED
 
         # find a valid owner email
@@ -113,4 +115,5 @@ class Token(Resource):
                 'status': 'fail',
                 'message': 'Matching owner email not found'
             }
+            log_event(idinfo['email'], 'UNAUTHORIZED - Valid owner not found')
             return response_object, status.HTTP_401_UNAUTHORIZED
