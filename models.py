@@ -32,6 +32,14 @@ def event_logger(jwt_identity, description):
     return new_event
 
 
+def log_event(jwt_identity, description):
+    new_event = EventLog()
+    new_event.google_id = jwt_identity
+    new_event.description = description
+    db.session.add(new_event)
+    return db.session.commit()
+
+
 class Owner(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True)
