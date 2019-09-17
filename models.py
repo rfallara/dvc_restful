@@ -11,31 +11,23 @@ import jwt
 db = SQLAlchemy()
 ma = Marshmallow()
 
-google_id = "test@test.com"
-
 
 class AddUpdateDelete:
-    def add(self, resource, log=""):
+    def add(self, resource):
         db.session.add(resource)
-        if log.__len__() > 0:
-            db.session.add(EventLogger(google_id, log))
         return db.session.commit()
 
-    def update(self, log=""):
-        if log.__len__() > 0:
-            db.session.add(EventLogger(google_id, log))
+    def update(self):
         return db.session.commit()
 
-    def delete(self, resource, log=""):
+    def delete(self, resource):
         db.session.delete(resource)
-        if log.__len__() > 0:
-            db.session.add(EventLogger(google_id, log))
         return db.session.commit()
 
 
-def EventLogger(google_id, description):
+def event_logger(jwt_identity, description):
     new_event = EventLog()
-    new_event.google_id = google_id
+    new_event.google_id = jwt_identity
     new_event.description = description
     return new_event
 

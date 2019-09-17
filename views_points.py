@@ -1,8 +1,8 @@
-from flask_restful import Resource, reqparse
+from flask_restful import Resource
 from flask import jsonify, request
 from models import db, ActualPoint, ActualPointScheme, PersonalPoint, PersonalPointSchema,\
-    Owner, OwnerEmail, EventLogger
-from flask_jwt_extended import jwt_required
+    Owner, OwnerEmail, event_logger
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from dateutil.relativedelta import *
 import datetime
 import status
@@ -163,7 +163,7 @@ class BankPointResource(Resource):
 
         log = 'POINTS BANKED - %s points banked with a bank date of %s' % (len(bankable_points), bank_date.strftime('%Y-%m-%d %H:%M:%S'))
 
-        db.session.add(EventLogger('test@google.com', log))
+        db.session.add(event_logger(get_jwt_identity(), log))
         db.session.commit()
         resp = jsonify({})
         resp.status_code = status.HTTP_201_CREATED
