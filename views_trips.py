@@ -6,7 +6,7 @@ import status
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from dateutil.relativedelta import *
 from datetime import datetime
-from models import db, PersonalPoint, ActualPoint, event_logger
+from models import db, PersonalPoint, ActualPoint, log_event
 from sqlalchemy import or_
 
 trip_schema = TripSchema()
@@ -29,9 +29,9 @@ class TripResource(Resource):
         for point in actual_points:
             point.trip_id = None
         try:
-            db.session.add(event_logger(get_jwt_identity(), 'DELETE - ' + trip.__repr__()))
             db.session.delete(trip)
             db.session.commit()
+            log_event(get_jwt_identity(), 'DELETE - ' + trip.__repr__())
             return None, status.HTTP_200_OK
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -204,15 +204,15 @@ class TripListResource(Resource):
 
         # ALL is good commit to db and return success
         try:
-            db.session.add(event_logger(get_jwt_identity(), 'CREATE - ' + new_trip.__repr__()))
-            db.session.add(event_logger(get_jwt_identity(),
-                                       'Personal Points Allocated: [%s,%s,%s]' % (len(personal_points_banked),
-                                                                                  len(personal_points_current),
-                                                                                  len(personal_points_borrow))))
-            db.session.add(event_logger(get_jwt_identity(),
-                                       'Actual Points Allocated: [%s,%s,%s]' % (len(actual_points_banked),
-                                                                                len(actual_points_current),
-                                                                                len(actual_points_borrow))))
+            log_event(get_jwt_identity(), 'CREATE - ' + new_trip.__repr__())
+            log_event(get_jwt_identity(),
+                      'Personal Points Allocated: [%s,%s,%s]' % (len(personal_points_banked),
+                                                                 len(personal_points_current),
+                                                                 len(personal_points_borrow)))
+            log_event(get_jwt_identity(),
+                      'Actual Points Allocated: [%s,%s,%s]' % (len(actual_points_banked),
+                                                               len(actual_points_current),
+                                                               len(actual_points_borrow)))
             db.session.commit()
             result = trip_schema.dump(new_trip).data
             return result, status.HTTP_201_CREATED

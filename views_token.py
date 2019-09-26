@@ -8,7 +8,7 @@ from google.auth.transport import requests
 from google.oauth2 import id_token
 
 import status
-from models import TokenUser, OwnerEmail, Owner, event_logger, log_event
+from models import TokenUser, OwnerEmail, Owner, log_event
 
 
 class Token(Resource):
@@ -108,7 +108,7 @@ class Token(Resource):
                 'email': idinfo['email'],
                 'picture': idinfo['picture']
             }
-            owner.add(event_logger(idinfo['email'], 'User authenticated - ' + owner.__repr__()))
+            log_event(idinfo['email'], 'User authenticated - ' + owner.__repr__())
             return response_object, status.HTTP_201_CREATED
         else:
             response_object = {

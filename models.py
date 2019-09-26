@@ -25,14 +25,8 @@ class AddUpdateDelete:
         return db.session.commit()
 
 
-def event_logger(jwt_identity, description):
-    new_event = EventLog()
-    new_event.google_id = jwt_identity
-    new_event.description = description
-    return new_event
-
-
 def log_event(jwt_identity, description):
+    """ Add an event directly to the db and commit"""
     new_event = EventLog()
     new_event.google_id = jwt_identity
     new_event.description = description
