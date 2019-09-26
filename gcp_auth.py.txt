@@ -1,9 +1,21 @@
+import os
 
-gcp_db = {
-    'username': '',
-    'password': '',
-    'db_addr': '',
-    'db_name': ''
-}
+if os.getenv('db') == 'dev':
+    gcp_db = {
+        'username': '',
+        'password': '',
+        'db_addr': '',
+        'db_name': ''
+    }
+    print('DEVELOPMENT DB IN USE')
+else:
+    gcp_db = {
+        'username': '',
+        'password': '',
+        'db_addr': '',
+        'db_name': ''
+    }
+    print('PRODUCTION DB IN USE')
 
 token_secret = b''
+
