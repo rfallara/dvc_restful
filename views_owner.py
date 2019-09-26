@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from flask_restful import Resource
 from sqlalchemy.exc import SQLAlchemyError
-from models import db, Owner, OwnerSchema, OwnerEmail, OwnerEmailSchema, PersonalPoint, event_logger
+from models import db, Owner, OwnerSchema, OwnerEmail, OwnerEmailSchema, PersonalPoint, log_event
 import status
 import datetime
 from dateutil.relativedelta import *
@@ -32,7 +32,7 @@ class OwnerResource(Resource):
             if 'name' in update_dict:
                 owner.name = update_dict['name']
             owner.update()
-            owner.add(event_logger(get_jwt_identity(), 'UPDATE - ' + owner.__repr__()))
+            log_event(get_jwt_identity(), 'UPDATE - ' + owner.__repr__())
             return self.get(id)
         except SQLAlchemyError as e:
                 db.session.rollback()
@@ -45,7 +45,7 @@ class OwnerResource(Resource):
         owner = Owner.query.get_or_404(id)
         try:
             owner.delete(owner)
-            owner.add(event_logger(get_jwt_identity(), 'DELETE - ' + owner.__repr__()))
+            log_event(get_jwt_identity(), 'DELETE - ' + owner.__repr__())
             return '', status.HTTP_204_NO_CONTENT
         except SQLAlchemyError as e:
                 db.session.rollback()
@@ -74,7 +74,7 @@ class OwnerListResource(Resource):
         try:
             owner = Owner(request_dict['name'])
             owner.add(owner)
-            owner.add(event_logger(get_jwt_identity(), 'ADD - ' + owner.__repr__()))
+            log_event(get_jwt_identity(), 'ADD - ' + owner.__repr__())
             query = Owner.query.get(owner.id)
             result = owner_schema.dump(query).data
             return result, status.HTTP_201_CREATED
@@ -110,8 +110,8 @@ class OwnerEmailResource(Resource):
         if validate_errors:
             return validate_errors, status.HTTP_400_BAD_REQUEST
         try:
+            log_event(get_jwt_identity(), 'UPDATE - ' + owner_email.__repr__())
             owner_email.update()
-            owner_email.add(event_logger(get_jwt_identity(), 'UPDATE - ' + owner_email.__repr__()))
             return self.get(id)
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -124,7 +124,7 @@ class OwnerEmailResource(Resource):
         owner_email = OwnerEmail.query.get_or_404(id)
         try:
             owner_email.delete(owner_email)
-            owner_email.add(event_logger(get_jwt_identity(), 'DELETE - ' + owner_email.__repr__()))
+            log_event(get_jwt_identity(), 'DELETE - ' + owner_email.__repr__())
             return '', status.HTTP_204_NO_CONTENT
         except SQLAlchemyError as e:
                 db.session.rollback()
@@ -162,7 +162,7 @@ class OwnerEmailListResource(Resource):
             if 'access_level' in request_dict:
                 owner_email.access_level = request_dict['access_level']
             owner_email.add(owner_email)
-            owner_email.add(event_logger(get_jwt_identity(), 'ADD - ' + owner_email.__repr__()))
+            log_event(get_jwt_identity(), 'ADD - ' + owner_email.__repr__())
             query = OwnerEmail.query.get(owner_email.id)
             result = owner_email_schema.dump(query).data
             return result, status.HTTP_201_CREATED
