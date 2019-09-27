@@ -9,6 +9,7 @@ from views_points import ActualPointResource, ActualPointListResource, ActualPoi
     PersonalPointResource, PersonalPointListResource, PersonalPointCountResource, PointCount,\
     BankPointCountResource, BankPointResource
 from views_trips import TripResource, TripListResource
+from views_events import EventLogResource, EventLogListResource
 
 
 api_bp = Blueprint('api', __name__)
@@ -37,3 +38,5 @@ api.add_resource(BankPointCountResource, '/bank_points/<int:epoch_bank_date>')
 api.add_resource(BankPointResource, '/bank_points/')
 api.add_resource(TripResource, '/trips/<int:trip_id>')
 api.add_resource(TripListResource, '/trips/')
+api.add_resource(EventLogListResource, '/events/')
+api.add_resource(EventLogResource, '/events/<int:id>')
