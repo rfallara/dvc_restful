@@ -24,6 +24,7 @@ class EventLogListResource(Resource):
         items = event_log_schema.dump(events.items, many=True).data
         result = {
             'items': items,
+            'current_page': page,
             'pages': events.pages,
             'has_next': events.has_next,
             'has_prev': events.has_prev,
