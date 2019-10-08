@@ -31,4 +31,5 @@ class EventLogListResource(Resource):
             'next_num': events.next_num,
             'prev_num': events.prev_num
         }
+
         return result
