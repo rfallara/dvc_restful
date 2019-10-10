@@ -28,8 +28,9 @@ class EventLogListResource(Resource):
             'pages': events.pages,
             'has_next': events.has_next,
             'has_prev': events.has_prev,
-            'next_num': events.next_num,
-            'prev_num': events.prev_num
+            'next_page': events.next_num,
+            'prev_page': events.prev_num,
+            'collection_size': events.total
         }
 
         return result
