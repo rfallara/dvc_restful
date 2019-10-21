@@ -34,8 +34,13 @@ class Token(Resource):
             #         user.password, post_data.get('password')
             # ):
             if user and user.password == post_data.get('password'):
+
+                user_claims = {
+                    "access_level": user.access_level
+                }
+
                 access_token = create_access_token(identity=user.username,
-                                                   expires_delta=timedelta(minutes=60))
+                                                   expires_delta=timedelta(minutes=60), user_claims=user_claims)
                 refresh_token = create_refresh_token(identity=user.username)
                 decoded_token = decode_token(access_token)
 
@@ -47,7 +52,8 @@ class Token(Resource):
                     'exp': decoded_token['exp'],
                     'owner': '',
                     'email': '',
-                    'picture': ''
+                    'picture': '',
+                    'access_level': user.access_level
                 }
                 return response_object, status.HTTP_201_CREATED
             else:
@@ -65,6 +71,7 @@ class Token(Resource):
             }
             return response_object, status.HTTP_500_INTERNAL_SERVER_ERROR
             # return make_response(jsonify(response_object)), 500
+
 
     @staticmethod
     def google_auth_login(post_data):
@@ -93,8 +100,16 @@ class Token(Resource):
         # owner = OwnerEmail.query.filter_by(owner_email = idinfo['email']).first()
         owner = Owner.query.join(OwnerEmail).filter(OwnerEmail.owner_email == idinfo['email']).first()
         if owner:
+            access_level = 0
+            for owner_emails in owner.email:
+                if owner_emails.owner_email == idinfo['email']:
+                    access_level = owner_emails.access_level
+                    # print(owner_emails.owner_email + " has access level " + str(owner_emails.access_level))
+            user_claims = {
+                "access_level": access_level
+            }
             access_token = create_access_token(identity=idinfo['email'],
-                                               expires_delta=timedelta(minutes=60))
+                                               expires_delta=timedelta(minutes=60), user_claims=user_claims)
             refresh_token = create_refresh_token(identity=idinfo['email'])
             decoded_token = decode_token(access_token)
 
@@ -106,7 +121,8 @@ class Token(Resource):
                 'exp': decoded_token['exp'],
                 'owner': owner.name,
                 'email': idinfo['email'],
-                'picture': idinfo['picture']
+                'picture': idinfo['picture'],
+                'access_level': access_level
             }
             log_event(idinfo['email'], 'User authenticated - ' + owner.__repr__())
             return response_object, status.HTTP_201_CREATED

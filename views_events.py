@@ -2,6 +2,7 @@ from flask import request
 from flask_restful import Resource
 from models import EventLog, EventLogSchema
 from flask_jwt_extended import jwt_required
+from dvc_decorators import jwt_access_level
 
 
 event_log_schema = EventLogSchema()
@@ -9,6 +10,7 @@ event_log_schema = EventLogSchema()
 
 class EventLogResource(Resource):
     @jwt_required
+    @jwt_access_level(7)
     def get(self, id):
         event = EventLog.query.get_or_404(id)
         result = event_log_schema.dump(event).data
@@ -17,6 +19,7 @@ class EventLogResource(Resource):
 
 class EventLogListResource(Resource):
     @jwt_required
+    @jwt_access_level(7)
     def get(self):
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 25, type=int)

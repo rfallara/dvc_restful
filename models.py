@@ -168,6 +168,7 @@ class TokenUser(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(45), nullable=False)
     password = db.Column(db.String(45), nullable=False)
+    access_level = db.Column(db.Integer, nullable=False)
 
     def encode_auth_token(self, user_id):
         """
