@@ -8,9 +8,9 @@ jwt = JWTManager(app)
 
 
 if app.config['ENV'].upper() == 'DEVELOPMENT':
-    print('DEVELOPMENT ENVIRONMENT')
+    print('FLASK DEVELOPMENT ENVIRONMENT')
 else:
-    print('PRODUCTION ENVIRONMENT')
+    print('FLASK PRODUCTION ENVIRONMENT')
 
 # app.run()
 
