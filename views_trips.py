@@ -20,6 +20,41 @@ class TripResource(Resource):
         return result
 
     @jwt_required
+    def put(self, trip_id):
+        trip = Trip.query.get_or_404(trip_id)
+        update_dict = request.get_json()
+        if not update_dict:
+            resp = {'message': 'No input data provided'}
+            return resp, status.HTTP_400_BAD_REQUEST
+        if not update_dict['notes']:
+            resp = {'message': 'Notes field required for update'}
+            return resp, status.HTTP_400_BAD_REQUEST
+        # ## trips update only allows notes to be updated ##
+        # errors = trip_schema.validate(update_dict)
+        # if errors:
+        #     return errors, status.HTTP_400_BAD_REQUEST
+        try:
+            if trip.notes is None:
+                original_notes = '<NULL>'
+            else:
+                original_notes = trip.notes
+            if 'notes' in update_dict:
+                if update_dict['notes'] == trip.notes:
+                    resp = jsonify({"error": "Notes value did not change from DB value"})
+                    resp.status_code = status.HTTP_400_BAD_REQUEST
+                    return resp
+                trip.notes = update_dict['notes']
+            trip.update()
+            log_event(get_jwt_identity(), 'UPDATE - Trip ' + str(trip.id) + ' notes to (' + trip.notes + ') from ('
+                      + original_notes + ')')
+            return self.get(trip_id)
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            resp = jsonify({"error": str(e)})
+            resp.status_code = status.HTTP_400_BAD_REQUEST
+            return resp
+
+    @jwt_required
     def delete(self, trip_id: int):
         trip: Trip = db.session.query(Trip).get_or_404(trip_id)
         personal_points = db.session.query(PersonalPoint).filter_by(trip_id=trip_id).all()
