@@ -13,7 +13,7 @@ runtime: python37
 
 service: api
 
-entrypoint: gunicorn wsgi
+entrypoint: gunicorn wsgi:app
 # Handlers define how to route requests to your application.
 handlers:
 - url: /api
