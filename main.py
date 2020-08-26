@@ -1,11 +1,17 @@
-from app import create_app
+from flask import Flask
+from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 import gcp_auth
+from models import db
+from views import api_bp
 
-app = create_app('config')
+app = Flask(__name__)
+app.config.from_object('config')
+CORS(app)
+db.init_app(app)
+app.register_blueprint(api_bp, url_prefix='/api')
 app.config['JWT_SECRET_KEY'] = gcp_auth.token_secret
 jwt = JWTManager(app)
-
 
 if app.config['ENV'].upper() == 'DEVELOPMENT':
     print('FLASK DEVELOPMENT ENVIRONMENT')
