@@ -11,8 +11,8 @@ event_log_schema = EventLogSchema()
 class EventLogResource(Resource):
     @jwt_required
     @jwt_access_level(7)
-    def get(self, id):
-        event = EventLog.query.get_or_404(id)
+    def get(self, event_id):
+        event = EventLog.query.get_or_404(event_id)
         result = event_log_schema.dump(event).data
         return result
 

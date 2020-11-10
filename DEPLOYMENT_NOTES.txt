@@ -4,6 +4,6 @@ To deploy in gcloud use:
     this will deploy to default project
 
 To deploy to the dev instance use:
-    gcloud app deploy app-dev.yaml --project=dvc-dev
+    gcloud app deploy app-dev.yaml --project=dvc-287619
 
 

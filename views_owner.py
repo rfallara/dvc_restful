@@ -13,14 +13,14 @@ owner_email_schema = OwnerEmailSchema()
 
 class OwnerResource(Resource):
     @jwt_required
-    def get(self, id):
-        owner = Owner.query.get_or_404(id)
+    def get(self, owner_id):
+        owner = Owner.query.get_or_404(owner_id)
         result = owner_schema.dump(owner).data
         return result
 
     @jwt_required
-    def put(self, id):
-        owner = Owner.query.get_or_404(id)
+    def put(self, owner_id):
+        owner = Owner.query.get_or_404(owner_id)
         update_dict = request.get_json()
         if not update_dict:
             resp = {'message': 'No input data provided'}
@@ -33,26 +33,27 @@ class OwnerResource(Resource):
                 owner.name = update_dict['name']
             owner.update()
             log_event(get_jwt_identity(), 'UPDATE - ' + owner.__repr__())
-            return self.get(id)
+            return self.get(owner_id)
         except SQLAlchemyError as e:
-                db.session.rollback()
-                resp = jsonify({"error": str(e)})
-                resp.status_code = status.HTTP_400_BAD_REQUEST
-                return resp
+            db.session.rollback()
+            resp = jsonify({"error": str(e)})
+            resp.status_code = status.HTTP_400_BAD_REQUEST
+            return resp
 
     @jwt_required
-    def delete(self, id):
-        owner = Owner.query.get_or_404(id)
+    def delete(self, owner_id):
+        owner = Owner.query.get_or_404(owner_id)
         try:
             owner.delete(owner)
             log_event(get_jwt_identity(), 'DELETE - ' + owner.__repr__())
             return '', status.HTTP_204_NO_CONTENT
         except SQLAlchemyError as e:
-                db.session.rollback()
-                # resp = jsonify({"error": str(e)})
-                resp = jsonify({"error": "Unable to delete owner"})
-                resp.status_code = status.HTTP_401_UNAUTHORIZED
-                return resp
+            db.session.rollback()
+            # resp = jsonify({"error": str(e)})
+            print(e)
+            resp = jsonify({"error": "Unable to delete owner"})
+            resp.status_code = status.HTTP_401_UNAUTHORIZED
+            return resp
 
 
 class OwnerListResource(Resource):
@@ -87,14 +88,14 @@ class OwnerListResource(Resource):
 
 class OwnerEmailResource(Resource):
     @jwt_required
-    def get(self, id):
-        owner_email = OwnerEmail.query.get_or_404(id)
+    def get(self, owner_id):
+        owner_email = OwnerEmail.query.get_or_404(owner_id)
         result = owner_email_schema.dump(owner_email).data
         return result
 
     @jwt_required
-    def put(self, id):
-        owner_email = OwnerEmail.query.get_or_404(id)
+    def put(self, owner_id):
+        owner_email = OwnerEmail.query.get_or_404(owner_id)
         update_dict = request.get_json()
         if not update_dict:
             resp = {'message': 'No input data provided'}
@@ -112,7 +113,7 @@ class OwnerEmailResource(Resource):
         try:
             log_event(get_jwt_identity(), 'UPDATE - ' + owner_email.__repr__())
             owner_email.update()
-            return self.get(id)
+            return self.get(owner_id)
         except SQLAlchemyError as e:
             db.session.rollback()
             resp = jsonify({"error": str(e)})
@@ -120,17 +121,17 @@ class OwnerEmailResource(Resource):
             return resp
 
     @jwt_required
-    def delete(self, id):
-        owner_email = OwnerEmail.query.get_or_404(id)
+    def delete(self, owner_id):
+        owner_email = OwnerEmail.query.get_or_404(owner_id)
         try:
             owner_email.delete(owner_email)
             log_event(get_jwt_identity(), 'DELETE - ' + owner_email.__repr__())
             return '', status.HTTP_204_NO_CONTENT
         except SQLAlchemyError as e:
-                db.session.rollback()
-                resp = jsonify({"error": str(e)})
-                resp.status_code = status.HTTP_401_UNAUTHORIZED
-                return resp
+            db.session.rollback()
+            resp = jsonify({"error": str(e)})
+            resp.status_code = status.HTTP_401_UNAUTHORIZED
+            return resp
 
 
 class OwnerEmailListResource(Resource):
@@ -158,7 +159,7 @@ class OwnerEmailListResource(Resource):
                 return resp, status.HTTP_400_BAD_REQUEST
                 # Now that we are sure we have an owner
                 # create a new owner email
-            owner_email = OwnerEmail(request_dict['owner_email'],owner)
+            owner_email = OwnerEmail(request_dict['owner_email'], owner)
             if 'access_level' in request_dict:
                 owner_email.access_level = request_dict['access_level']
             owner_email.add(owner_email)
@@ -212,4 +213,3 @@ class OwnerDetailedResource(Resource):
                                    'currentPoints': current_count,
                                    'borrowPoints': borrow_count})
         return current_owner_data
-

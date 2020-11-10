@@ -72,7 +72,6 @@ class Token(Resource):
             return response_object, status.HTTP_500_INTERNAL_SERVER_ERROR
             # return make_response(jsonify(response_object)), 500
 
-
     @staticmethod
     def google_auth_login(post_data):
         token = post_data.get('google_id_token')

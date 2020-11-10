@@ -13,14 +13,14 @@ bookable_room_schema = BookableRoomSchema()
 
 class ResortResource(Resource):
     @jwt_required
-    def get(self, id):
-        resort = Resort.query.get_or_404(id)
+    def get(self, resort_id):
+        resort = Resort.query.get_or_404(resort_id)
         result = resort_schema.dump(resort).data
         return result
 
     @jwt_required
-    def put(self, id):
-        resort = Resort.query.get_or_404(id)
+    def put(self, resort_id):
+        resort = Resort.query.get_or_404(resort_id)
         update_dict = request.get_json()
         if not update_dict:
             resp = {'message': 'No input data provided'}
@@ -36,7 +36,7 @@ class ResortResource(Resource):
         try:
             resort.update()
             log_event(get_jwt_identity(), "UPDATE " + resort.__repr__())
-            return self.get(id)
+            return self.get(resort_id)
         except SQLAlchemyError as e:
             db.session.rollback()
             resp = jsonify({"error": str(e)})
@@ -44,8 +44,8 @@ class ResortResource(Resource):
             return resp
 
     @jwt_required
-    def delete(self, id):
-        resort = Resort.query.get_or_404(id)
+    def delete(self, resort_id):
+        resort = Resort.query.get_or_404(resort_id)
         try:
             resort.delete(resort)
             log_event(get_jwt_identity(), "DELETE - " + resort.__repr__())
@@ -89,14 +89,14 @@ class ResortListResource(Resource):
 
 class RoomTypeResource(Resource):
     @jwt_required
-    def get(self, id):
-        room_type = RoomType.query.get_or_404(id)
+    def get(self, room_type_id):
+        room_type = RoomType.query.get_or_404(room_type_id)
         result = room_type_schema.dump(room_type).data
         return result
 
     @jwt_required
-    def put(self, id):
-        room_type = RoomType.query.get_or_404(id)
+    def put(self, room_type_id):
+        room_type = RoomType.query.get_or_404(room_type_id)
         update_dict = request.get_json()
         if not update_dict:
             resp = {'message': 'No input data provided'}
@@ -114,7 +114,7 @@ class RoomTypeResource(Resource):
         try:
             room_type.update()
             log_event(get_jwt_identity(), "UPDATE - " + room_type.__repr__())
-            return self.get(id)
+            return self.get(room_type_id)
         except SQLAlchemyError as e:
             db.session.rollback()
             resp = jsonify({"error": str(e)})
@@ -122,8 +122,8 @@ class RoomTypeResource(Resource):
             return resp
 
     @jwt_required
-    def delete(self, id):
-        room_type = RoomType.query.get_or_404(id)
+    def delete(self, room_type_id):
+        room_type = RoomType.query.get_or_404(room_type_id)
         try:
             room_type.delete(room_type)
             log_event(get_jwt_identity(), "DELETE - " + room_type.__repr__())
@@ -169,14 +169,14 @@ class RoomTypeListResource(Resource):
 
 class BookableRoomResource(Resource):
     @jwt_required
-    def get(self, id):
-        bookable_room = BookableRoom.query.get_or_404(id)
+    def get(self, bookable_room_id):
+        bookable_room = BookableRoom.query.get_or_404(bookable_room_id)
         result = bookable_room_schema.dump(bookable_room).data
         return result
 
     @jwt_required
-    def put(self, id):
-        bookable_room = BookableRoom.query.get_or_404(id)
+    def put(self, bookable_room_id):
+        bookable_room = BookableRoom.query.get_or_404(bookable_room_id)
         update_dict = request.get_json()
         if not update_dict:
             resp = {'message': 'No input data provided'}
@@ -206,7 +206,7 @@ class BookableRoomResource(Resource):
         try:
             bookable_room.update()
             log_event(get_jwt_identity(), "UPDATE - " + bookable_room.__repr__())
-            return self.get(id)
+            return self.get(bookable_room_id)
         except SQLAlchemyError as e:
             db.session.rollback()
             resp = jsonify({"error": str(e)})
@@ -214,8 +214,8 @@ class BookableRoomResource(Resource):
             return resp
 
     @jwt_required
-    def delete(self, id):
-        bookable_room = BookableRoom.query.get_or_404(id)
+    def delete(self, bookable_room_id):
+        bookable_room = BookableRoom.query.get_or_404(bookable_room_id)
         try:
             bookable_room.delete(bookable_room)
             log_event(get_jwt_identity(), "DELETE - " + bookable_room.__repr__())
