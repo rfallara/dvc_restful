@@ -13,8 +13,8 @@ personal_point_schema = PersonalPointSchema()
 
 class ActualPointResource(Resource):
     @jwt_required
-    def get(self, id):
-        actual_point = ActualPoint.query.get_or_404(id)
+    def get(self, ap_id):
+        actual_point = ActualPoint.query.get_or_404(ap_id)
         result = actual_point_schema.dump(actual_point).data
         return result
 
@@ -68,8 +68,8 @@ class ActualPointCountResource(Resource):
 
 class PersonalPointResource(Resource):
     @jwt_required
-    def get(self, id):
-        personal_point = PersonalPoint.query.get_or_404(id)
+    def get(self, pp_id):
+        personal_point = PersonalPoint.query.get_or_404(pp_id)
         result = personal_point_schema.dump(personal_point).data
         return result
 
@@ -161,13 +161,11 @@ class BankPointResource(Resource):
         for point in bankable_points:
             point.banked_date = bank_date
 
-        log = 'POINTS BANKED - %s points banked with a bank date of %s' % (len(bankable_points), bank_date.strftime('%Y-%m-%d %H:%M:%S'))
+        log = 'POINTS BANKED - %s points banked with a bank date of %s' % (len(bankable_points),
+                                                                           bank_date.strftime('%Y-%m-%d %H:%M:%S'))
 
         db.session.commit()
         log_event(get_jwt_identity(), log)
         resp = jsonify({})
         resp.status_code = status.HTTP_201_CREATED
         return resp
-
-
-

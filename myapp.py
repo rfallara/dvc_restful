@@ -70,4 +70,3 @@ class PersonalPoint(db.Model):
         self.use_year = use_year
         self.point_number = point_number
         self.owner_id = owner_id
-
