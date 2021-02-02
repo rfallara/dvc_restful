@@ -5,3 +5,5 @@
 /__pycache__/
 /migrations
 gcp_auth.py
+/.vscode
+.DS_Store
