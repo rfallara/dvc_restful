@@ -15,7 +15,7 @@ class OwnerResource(Resource):
     @jwt_required
     def get(self, owner_id):
         owner = Owner.query.get_or_404(owner_id)
-        result = owner_schema.dump(owner).data
+        result = owner_schema.dump(owner)
         return result
 
     @jwt_required
@@ -60,7 +60,7 @@ class OwnerListResource(Resource):
     @jwt_required
     def get(self):
         owners = Owner.query.order_by(Owner.id).all()
-        result = owner_schema.dump(owners, many=True).data
+        result = owner_schema.dump(owners, many=True)
         return result
 
     @jwt_required
@@ -77,7 +77,7 @@ class OwnerListResource(Resource):
             owner.add(owner)
             log_event(get_jwt_identity(), 'ADD - ' + owner.__repr__())
             query = Owner.query.get(owner.id)
-            result = owner_schema.dump(query).data
+            result = owner_schema.dump(query)
             return result, status.HTTP_201_CREATED
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -90,7 +90,7 @@ class OwnerEmailResource(Resource):
     @jwt_required
     def get(self, owner_id):
         owner_email = OwnerEmail.query.get_or_404(owner_id)
-        result = owner_email_schema.dump(owner_email).data
+        result = owner_email_schema.dump(owner_email)
         return result
 
     @jwt_required
@@ -138,7 +138,7 @@ class OwnerEmailListResource(Resource):
     @jwt_required
     def get(self):
         owner_emails = OwnerEmail.query.all()
-        result = owner_email_schema.dump(owner_emails, many=True).data
+        result = owner_email_schema.dump(owner_emails, many=True)
         return result
 
     @jwt_required
@@ -165,7 +165,7 @@ class OwnerEmailListResource(Resource):
             owner_email.add(owner_email)
             log_event(get_jwt_identity(), 'ADD - ' + owner_email.__repr__())
             query = OwnerEmail.query.get(owner_email.id)
-            result = owner_email_schema.dump(query).data
+            result = owner_email_schema.dump(query)
             return result, status.HTTP_201_CREATED
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -208,7 +208,7 @@ class OwnerDetailedResource(Resource):
         #         'current': current_count,
         #         'borrow': borrow_count}
 
-        current_owner_data = owner_schema.dump(current_owner).data
+        current_owner_data = owner_schema.dump(current_owner)
         current_owner_data.update({'bankedPoints': banked_count,
                                    'currentPoints': current_count,
                                    'borrowPoints': borrow_count})

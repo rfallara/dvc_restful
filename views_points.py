@@ -15,7 +15,7 @@ class ActualPointResource(Resource):
     @jwt_required
     def get(self, ap_id):
         actual_point = ActualPoint.query.get_or_404(ap_id)
-        result = actual_point_schema.dump(actual_point).data
+        result = actual_point_schema.dump(actual_point)
         return result
 
 
@@ -23,7 +23,7 @@ class ActualPointListResource(Resource):
     @jwt_required
     def get(self):
         actual_point = ActualPoint.query.all()
-        result = actual_point_schema.dump(actual_point, many=True).data
+        result = actual_point_schema.dump(actual_point, many=True)
         return result
 
 
@@ -70,7 +70,7 @@ class PersonalPointResource(Resource):
     @jwt_required
     def get(self, pp_id):
         personal_point = PersonalPoint.query.get_or_404(pp_id)
-        result = personal_point_schema.dump(personal_point).data
+        result = personal_point_schema.dump(personal_point)
         return result
 
 
@@ -78,7 +78,7 @@ class PersonalPointListResource(Resource):
     @jwt_required
     def get(self):
         personal_point = PersonalPoint.query.all()
-        result = personal_point_schema.dump(personal_point, many=True).data
+        result = personal_point_schema.dump(personal_point, many=True)
         return result
 
 
@@ -146,7 +146,8 @@ class BankPointResource(Resource):
         if not request_dict:
             resp = {'message': 'No input data provided'}
             return resp, status.HTTP_400_BAD_REQUEST
-        bank_date = datetime.datetime.fromtimestamp(request_dict['epoch_bank_date'])
+        bank_date = datetime.datetime.fromtimestamp(
+            request_dict['epoch_bank_date'])
         bankable_points = ActualPoint.query.\
             filter(ActualPoint.use_year < bank_date,
                    ActualPoint.use_year > (bank_date + relativedelta(years=-1))).\
@@ -154,7 +155,8 @@ class BankPointResource(Resource):
             limit(request_dict['count_to_bank']).all()
 
         if request_dict['count_to_bank'] > len(bankable_points):
-            resp = jsonify({"error": "requested bank is more than available bankable points"})
+            resp = jsonify(
+                {"error": "requested bank is more than available bankable points"})
             resp.status_code = status.HTTP_400_BAD_REQUEST
             return resp
 

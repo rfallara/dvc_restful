@@ -16,7 +16,7 @@ class TripResource(Resource):
     @jwt_required
     def get(self, trip_id):
         trip = Trip.query.get_or_404(trip_id)
-        result = trip_schema.dump(trip).data
+        result = trip_schema.dump(trip)
         return result
 
     @jwt_required
@@ -40,7 +40,8 @@ class TripResource(Resource):
                 original_notes = trip.notes
             if 'notes' in update_dict:
                 if update_dict['notes'] == trip.notes:
-                    resp = jsonify({"error": "Notes value did not change from DB value"})
+                    resp = jsonify(
+                        {"error": "Notes value did not change from DB value"})
                     resp.status_code = status.HTTP_400_BAD_REQUEST
                     return resp
                 trip.notes = update_dict['notes']
@@ -57,10 +58,12 @@ class TripResource(Resource):
     @jwt_required
     def delete(self, trip_id: int):
         trip: Trip = db.session.query(Trip).get_or_404(trip_id)
-        personal_points = db.session.query(PersonalPoint).filter_by(trip_id=trip_id).all()
+        personal_points = db.session.query(
+            PersonalPoint).filter_by(trip_id=trip_id).all()
         for point in personal_points:
             point.trip_id = None
-        actual_points = db.session.query(ActualPoint).filter_by(trip_id=trip_id).all()
+        actual_points = db.session.query(
+            ActualPoint).filter_by(trip_id=trip_id).all()
         for point in actual_points:
             point.trip_id = None
         try:
@@ -79,7 +82,7 @@ class TripListResource(Resource):
     @jwt_required
     def get(self):
         trip = Trip.query.all()
-        result = trip_schema.dump(trip, many=True).data
+        result = trip_schema.dump(trip, many=True)
         return result
 
     @jwt_required
@@ -93,7 +96,8 @@ class TripListResource(Resource):
             return errors, status.HTTP_400_BAD_REQUEST
         else:
             # create a new trip object and validate data
-            trip_owner = Owner.query.filter_by(name=request_dict['owner']['name']).first()
+            trip_owner = Owner.query.filter_by(
+                name=request_dict['owner']['name']).first()
             if trip_owner is None:
                 # owner does not exist
                 resp = {'message': 'owner does not exist'}
@@ -101,18 +105,22 @@ class TripListResource(Resource):
             # new_trip.owner_id = trip_owner.id
             trip_bookable_room = BookableRoom.query. \
                 filter(BookableRoom.resort.has(name=request_dict['bookable_room']['resort']['name'])). \
-                filter(BookableRoom.room_type.has(name=request_dict['bookable_room']['room_type']['name'])).first()
+                filter(BookableRoom.room_type.has(
+                    name=request_dict['bookable_room']['room_type']['name'])).first()
             if trip_bookable_room is None:
                 # Resort does not exist
                 resp = {'message': 'bookable room does not exist'}
                 return resp, status.HTTP_400_BAD_REQUEST
             new_trip = Trip(trip_owner, trip_bookable_room)
-            new_trip.check_in_date = datetime.strptime(request_dict['check_in_date'].split('T')[0], '%Y-%m-%d')
-            new_trip.check_out_date = datetime.strptime(request_dict['check_out_date'].split('T')[0], '%Y-%m-%d')
+            new_trip.check_in_date = datetime.strptime(
+                request_dict['check_in_date'].split('T')[0], '%Y-%m-%d')
+            new_trip.check_out_date = datetime.strptime(
+                request_dict['check_out_date'].split('T')[0], '%Y-%m-%d')
             if new_trip.check_in_date >= new_trip.check_out_date:
                 resp = {'message': 'check out must be after check in date'}
                 return resp, status.HTTP_400_BAD_REQUEST
-            new_trip.booked_date = datetime.strptime(request_dict['booked_date'].split('T')[0], '%Y-%m-%d')
+            new_trip.booked_date = datetime.strptime(
+                request_dict['booked_date'].split('T')[0], '%Y-%m-%d')
             new_trip.notes = request_dict['notes']
             new_trip.points_needed = request_dict['points_needed']
             if new_trip.points_needed < 0:
@@ -180,7 +188,8 @@ class TripListResource(Resource):
         # IF more personal points requirement was satisfied
         if personal_points_needed > 0:
             db.session.rollback()
-            resp = {'message': 'personal points shortage of %s points' % personal_points_needed}
+            resp = {
+                'message': 'personal points shortage of %s points' % personal_points_needed}
             return resp, status.HTTP_400_BAD_REQUEST
 
         # FIND actual points
@@ -234,7 +243,8 @@ class TripListResource(Resource):
         # IF more personal points requirement was satisfied
         if actual_points_needed > 0:
             db.session.rollback()
-            resp = {'message': 'actual points shortage of %s points' % actual_points_needed}
+            resp = {
+                'message': 'actual points shortage of %s points' % actual_points_needed}
             return resp, status.HTTP_400_BAD_REQUEST
 
         # ALL is good commit to db and return success
@@ -249,7 +259,7 @@ class TripListResource(Resource):
                                                                len(actual_points_current),
                                                                len(actual_points_borrow)))
             db.session.commit()
-            result = trip_schema.dump(new_trip).data
+            result = trip_schema.dump(new_trip)
             return result, status.HTTP_201_CREATED
         except SQLAlchemyError as e:
             db.session.rollback()

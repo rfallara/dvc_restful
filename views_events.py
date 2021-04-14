@@ -13,7 +13,7 @@ class EventLogResource(Resource):
     @jwt_access_level(7)
     def get(self, event_id):
         event = EventLog.query.get_or_404(event_id)
-        result = event_log_schema.dump(event).data
+        result = event_log_schema.dump(event)
         return result
 
 
@@ -23,8 +23,9 @@ class EventLogListResource(Resource):
     def get(self):
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 25, type=int)
-        events = EventLog.query.order_by(EventLog.timestamp.desc()).paginate(page, per_page)
-        items = event_log_schema.dump(events.items, many=True).data
+        events = EventLog.query.order_by(
+            EventLog.timestamp.desc()).paginate(page, per_page)
+        items = event_log_schema.dump(events.items, many=True)
         result = {
             'items': items,
             'current_page': page,
