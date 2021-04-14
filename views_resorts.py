@@ -15,7 +15,7 @@ class ResortResource(Resource):
     @jwt_required
     def get(self, resort_id):
         resort = Resort.query.get_or_404(resort_id)
-        result = resort_schema.dump(resort).data
+        result = resort_schema.dump(resort)
         return result
 
     @jwt_required
@@ -61,7 +61,7 @@ class ResortListResource(Resource):
     @jwt_required
     def get(self):
         resort = Resort.query.order_by(Resort.name).all()
-        result = resort_schema.dump(resort, many=True).data
+        result = resort_schema.dump(resort, many=True)
         return result
 
     @jwt_required
@@ -78,7 +78,7 @@ class ResortListResource(Resource):
             resort.add(resort)
             log_event(get_jwt_identity(), "ADD - " + resort.__repr__())
             query = Resort.query.get(resort.id)
-            result = resort_schema.dump(query).data
+            result = resort_schema.dump(query)
             return result, status.HTTP_201_CREATED
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -91,7 +91,7 @@ class RoomTypeResource(Resource):
     @jwt_required
     def get(self, room_type_id):
         room_type = RoomType.query.get_or_404(room_type_id)
-        result = room_type_schema.dump(room_type).data
+        result = room_type_schema.dump(room_type)
         return result
 
     @jwt_required
@@ -139,7 +139,7 @@ class RoomTypeListResource(Resource):
     @jwt_required
     def get(self):
         room_type = RoomType.query.order_by(RoomType.name).all()
-        result = room_type_schema.dump(room_type, many=True).data
+        result = room_type_schema.dump(room_type, many=True)
         return result
 
     @jwt_required
@@ -158,7 +158,7 @@ class RoomTypeListResource(Resource):
             room_type.add(room_type)
             log_event(get_jwt_identity(), "ADD - " + room_type.__repr__())
             query = RoomType.query.get(room_type.id)
-            result = room_type_schema.dump(query).data
+            result = room_type_schema.dump(query)
             return result, status.HTTP_201_CREATED
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -171,7 +171,7 @@ class BookableRoomResource(Resource):
     @jwt_required
     def get(self, bookable_room_id):
         bookable_room = BookableRoom.query.get_or_404(bookable_room_id)
-        result = bookable_room_schema.dump(bookable_room).data
+        result = bookable_room_schema.dump(bookable_room)
         return result
 
     @jwt_required
@@ -205,7 +205,8 @@ class BookableRoomResource(Resource):
             return validate_errors, status.HTTP_400_BAD_REQUEST
         try:
             bookable_room.update()
-            log_event(get_jwt_identity(), "UPDATE - " + bookable_room.__repr__())
+            log_event(get_jwt_identity(), "UPDATE - " +
+                      bookable_room.__repr__())
             return self.get(bookable_room_id)
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -218,7 +219,8 @@ class BookableRoomResource(Resource):
         bookable_room = BookableRoom.query.get_or_404(bookable_room_id)
         try:
             bookable_room.delete(bookable_room)
-            log_event(get_jwt_identity(), "DELETE - " + bookable_room.__repr__())
+            log_event(get_jwt_identity(), "DELETE - " +
+                      bookable_room.__repr__())
             return None, status.HTTP_200_OK
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -231,7 +233,7 @@ class BookableRoomListResource(Resource):
     @jwt_required
     def get(self):
         bookable_room = BookableRoom.query.all()
-        result = bookable_room_schema.dump(bookable_room, many=True).data
+        result = bookable_room_schema.dump(bookable_room, many=True)
         return result
 
     @jwt_required
@@ -260,7 +262,7 @@ class BookableRoomListResource(Resource):
             bookable_room.add(bookable_room)
             log_event(get_jwt_identity(), "ADD - " + bookable_room.__repr__())
             query = BookableRoom.query.get(bookable_room.id)
-            result = bookable_room_schema.dump(query).data
+            result = bookable_room_schema.dump(query)
             return result, status.HTTP_201_CREATED
         except SQLAlchemyError as e:
             db.session.rollback()
