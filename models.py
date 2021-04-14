@@ -37,9 +37,12 @@ def log_event(jwt_identity, description):
 class Owner(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True)
-    email = db.relationship('OwnerEmail', backref=db.backref('owner', lazy='joined'), lazy='joined')
-    person_points = db.relationship('PersonalPoint', backref='owner', lazy='select')
-    trips = db.relationship('Trip', backref=db.backref('owner', lazy='joined'), lazy='select')
+    email = db.relationship('OwnerEmail', backref=db.backref(
+        'owner', lazy='joined'), lazy='joined')
+    person_points = db.relationship(
+        'PersonalPoint', backref='owner', lazy='select')
+    trips = db.relationship('Trip', backref=db.backref(
+        'owner', lazy='joined'), lazy='select')
 
     def __init__(self, name):
         self.name = name
@@ -67,7 +70,8 @@ class OwnerEmail(db.Model, AddUpdateDelete):
 class Resort(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
-    bookable_rooms = db.relationship('BookableRoom', backref=db.backref('resort', lazy='joined'), lazy='joined')
+    bookable_rooms = db.relationship('BookableRoom', backref=db.backref(
+        'resort', lazy='joined'), lazy='joined')
 
     def __init__(self, name):
         self.name = name
@@ -80,7 +84,8 @@ class RoomType(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
     sleeps = db.Column(db.Integer, nullable=True)
-    bookable_rooms = db.relationship('BookableRoom', backref=db.backref('room_type', lazy='joined'), lazy='joined')
+    bookable_rooms = db.relationship('BookableRoom', backref=db.backref(
+        'room_type', lazy='joined'), lazy='joined')
 
     def __init__(self, name, **kwargs):
         self.name = name
@@ -93,9 +98,12 @@ class RoomType(db.Model, AddUpdateDelete):
 
 class BookableRoom(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
-    resort_id = db.Column(db.Integer, db.ForeignKey('resort.id'), nullable=False)
-    room_type_id = db.Column(db.Integer, db.ForeignKey('room_type.id'), nullable=False)
-    trips = db.relationship('Trip', backref=db.backref('bookable_room', lazy='joined'), lazy='joined')
+    resort_id = db.Column(db.Integer, db.ForeignKey(
+        'resort.id'), nullable=False)
+    room_type_id = db.Column(db.Integer, db.ForeignKey(
+        'room_type.id'), nullable=False)
+    trips = db.relationship('Trip', backref=db.backref(
+        'bookable_room', lazy='joined'), lazy='joined')
 
     def __init__(self, resort, room_type):
         self.resort = resort
@@ -106,7 +114,8 @@ class BookableRoom(db.Model, AddUpdateDelete):
 
 
 class ActualPoint(db.Model, AddUpdateDelete):
-    id = db.Column(db.Integer, unique=True, nullable=False, primary_key=False, autoincrement=True)
+    id = db.Column(db.Integer, unique=True, nullable=False,
+                   primary_key=False, autoincrement=True)
     use_year = db.Column(db.DateTime, primary_key=True)
     point_number = db.Column(db.Integer, primary_key=True, autoincrement=False)
     trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'))
@@ -117,14 +126,16 @@ class ActualPoint(db.Model, AddUpdateDelete):
         self.point_number = point_number
 
     def __repr__(self):
-        return "Actual point %s-%s - ID(%s)" %(self.use_year, self.point_number, self.id)
+        return "Actual point %s-%s - ID(%s)" % (self.use_year, self.point_number, self.id)
 
 
 class PersonalPoint(db.Model, AddUpdateDelete):
-    id = db.Column(db.Integer, unique=True, nullable=False, primary_key=False, autoincrement=True)
+    id = db.Column(db.Integer, unique=True, nullable=False,
+                   primary_key=False, autoincrement=True)
     use_year = db.Column(db.DateTime, primary_key=True)
     point_number = db.Column(db.Integer, primary_key=True, autoincrement=False)
-    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey(
+        'owner.id'), primary_key=True)
     trip_id = db.Column(db.Integer, db.ForeignKey('trip.id'))
 
     def __init__(self, use_year, point_number, owner_id):
@@ -141,7 +152,8 @@ class Trip(db.Model, AddUpdateDelete):
     check_in_date = db.Column(db.DateTime, nullable=False)
     check_out_date = db.Column(db.DateTime, nullable=False)
     notes = db.Column(db.String(255))
-    bookable_room_id = db.Column(db.Integer, db.ForeignKey('bookable_room.id'), nullable=False)
+    bookable_room_id = db.Column(db.Integer, db.ForeignKey(
+        'bookable_room.id'), nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
     booked_date = db.Column(db.DateTime, nullable=False)
     points_needed = db.Column(db.Integer, nullable=False)
@@ -159,7 +171,8 @@ class Trip(db.Model, AddUpdateDelete):
 
 class EventLog(db.Model, AddUpdateDelete):
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, server_default=func.now(), nullable=False)
+    timestamp = db.Column(
+        db.DateTime, server_default=func.now(), nullable=False)
     google_id = db.Column(db.String(45), nullable=False)
     description = db.Column(db.String(4095), nullable=False)
 
@@ -240,13 +253,13 @@ class OwnerEmailSchema(ma.Schema):
 
 
 class ResortSchema(ma.Schema):
-    id = fields.Integer(dump_only=True)
+    id = fields.Integer(dump_only=False)
     url = ma.URLFor('api.resortresource', id='<id>', _external=True)
     name = fields.String(required=True, validate=validate.Length(3))
 
 
 class RoomTypeSchema(ma.Schema):
-    id = fields.Integer(dump_only=True)
+    id = fields.Integer(dump_only=False)
     url = ma.URLFor('api.roomtyperesource', id='<id>', _external=True)
     name = fields.String(required=True, validate=validate.Length(3))
     sleeps = fields.Integer(allow_none=True)
@@ -286,7 +299,8 @@ class TripSchema(ma.Schema):
     bookable_room = fields.Nested('BookableRoomSchema', required=True)
     owner = fields.Nested('OwnerSchema', required=True)
     booked_date = fields.DateTime(required=True)
-    points_needed = fields.Integer(required=True, validate=validate.Range(min=1))
+    points_needed = fields.Integer(
+        required=True, validate=validate.Range(min=1))
 
 
 class EventLogSchema(ma.Schema):
@@ -295,4 +309,3 @@ class EventLogSchema(ma.Schema):
     timestamp = fields.DateTime(dump_only=True)
     google_id = fields.String(required=True)
     description = fields.String(required=True, validate=validate.Length(min=3))
-
