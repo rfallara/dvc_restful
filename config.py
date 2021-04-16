@@ -8,7 +8,7 @@ DEBUG = False
 SQLALCHEMY_ECHO = False
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-# postgres://***REMOVED***
+
 # SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{DB_USER}:{DB_PASS}@{DB_ADDR}/{DB_NAME}".format(
 SQLALCHEMY_DATABASE_URI = "postgres://{DB_USER}:{DB_PASS}@{DB_ADDR}:5432/{DB_NAME}".format(
     DB_USER=gcp_auth.gcp_db['username'],
